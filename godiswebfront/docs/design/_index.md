@@ -51,6 +51,7 @@ Outputs:
 
 ### UI
 
+- `docs/design/ui/_screen-map.md`
 - `docs/design/ui/admin/web-admin-console.md`
 - `docs/design/ui/admin/web-dashboard.md`
 - `docs/design/ui/admin/web-wallet-mgmt.md`
