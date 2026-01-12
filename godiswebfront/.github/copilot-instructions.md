@@ -1,231 +1,271 @@
 ---
-# ✅ copilot-instructions_v0.2.md
-# GODIS Admin Web – Copilot Instructions (Repo-Scoped, Always-On)
 
-## Scope (NON-NEGOTIABLE)
+# 🧠 Copilot Instructions – GODIS Admin Web (v1.0)
+
+## 1. Scope (NON-NEGOTIABLE)
+
 This instruction file applies **ONLY** to this repository:
-**GODIS Admin Web (React + Spring Boot + MyBatis)**.
 
-If any other project instructions are found elsewhere,
-they are **out of scope** and must be ignored.
+**GODIS Admin Web (React + Spring Boot + MyBatis)**
 
----
+* Frontend: React (JSX)
+* Backend: Spring Boot (Java) + MyBatis
+* ❌ Mobile App, React Native, App.tsx, or Navigation rules do NOT exist in this repository
 
-## Source of Truth (SSOT → Code)
-Copilot must treat documents and existing contracts as executable agreements.
-
-Priority order:
-1) Design / SSOT documents
-2) Frontend API contracts (e.g. src/api/*.jsx)
-3) Existing codebase patterns in this repository
-4) Implementation details
-
-Copilot must **never guess** unclear requirements.
-If a definition is missing or ambiguous, **update the SSOT first**, then implement code.
+Copilot must **ignore any mobile or app-related guidance** found elsewhere.
 
 ---
 
-## Primary UI Standard (MUST)
+## 2. Source of Truth (SSOT → Code)
+
+Copilot must treat documents and existing contracts as **executable agreements**.
+
+### Priority Order (STRICT)
+
+1. **Design / SSOT documents**
+
+   * `docs/기본설계문서`
+   * `docs/design`
+2. **Frontend API contracts**
+
+   * `src/api/*.jsx`
+3. Existing codebase patterns in this repository
+4. Implementation details
+
+### Rules
+
+* ❌ Do NOT generate features, fields, or APIs that are not defined in the design documents
+* If an existing API contract exists in `src/api`, **it is the absolute source of truth**
+* If a requirement is unclear or missing:
+
+  * ❌ Do NOT implement
+  * ✅ Update the SSOT documents first
+
+Copilot must **never guess**.
+
+---
+
+## 3. Design Document Locations
+
+```
+docs/
+ ├ 기본설계문서/                ← Original SSOT
+ └ design/                      ← Web-specific refined design
+    ├ api/
+    │   └ web-admin.md
+    ├ model/
+    │   ├ web-admin.md
+    │   ├ web-common-types.md
+    │   └ web-error-codes.md
+    └ ui/admin/
+        ├ web-admin-console.md
+        ├ web-approval.md
+        ├ web-coin-dist.md
+        ├ web-dashboard.md
+        ├ web-monthly-plan.md
+        ├ web-tx-history.md
+        └ web-wallet-mgmt.md
+```
+
+---
+
+## 4. Primary UI Standard (MANDATORY)
+
 UI implementation must follow:
-- `docs/GODIS_화면표준화개발가이드_v1.1.md`
 
-If v1.1 lacks a specific component usage detail,
-follow existing GODIS standard patterns in the codebase.
+* `docs/GODIS_화면표준화개발가이드_v1.1.md`
 
----
+### Allowed UI Components (ONLY)
 
-## Fixed Technology Stack (MANDATORY)
+* `GPageContainer`
+* `GSearchHeader`
+* `GDataGrid`
+* `GLayoutGroup`
+* `GLayoutItem`
+* `GButton`
 
-### Frontend
-- React (JSX)
-- Use **GODIS shared UI components only**
-
-Examples:
-- `GPageContainer`
-- `GSearchHeader`
-- `GDataGrid`
-- `GLayoutGroup`
-- `GLayoutItem`
-- `GButton`
-
-Do NOT introduce any new UI framework or arbitrary component
-unless explicitly allowed by SSOT.
-
-### Backend
-- Spring Boot (Java)
-- MyBatis
-- **All SQL must be written in `Mapper.xml` files**
-  - SQL in Java code or annotations is forbidden
-
-### API Style
-- REST
-- JSON request/response
-- Bearer Token authentication
+❌ Do NOT introduce arbitrary UI frameworks
+❌ Do NOT create components not defined in SSOT
 
 ---
 
-## Folder Structure Rules (ENFORCED)
+## 5. Frontend Rules (React Admin Web)
 
-### Backend (Spring Boot)
-```
-
-controller/
-service/
-mapper/
-dto/
-resources/mapper/**/*.xml
+### 5.1 Screen Location (FIXED)
 
 ```
-
-### Frontend (React)
-```
-
-src/screens/IWon/     // ALL Admin screens MUST be here
-src/components/      // reusable components
-src/api/             // API modules
-
+src/screens/IWon/
 ```
 
 Rules:
-- Admin screen files MUST be created under `src/screens/IWon`
-- Do NOT create screen files under `pages/`
-- Do NOT create screen files outside `src/screens/IWon`
+
+* All Admin screens **must** be created under this path
+* ❌ Do NOT create screens under `pages/` or any other directory
 
 ---
 
-## Frontend Screen File Naming Rules (MANDATORY)
+### 5.2 File Naming Rules (STRICT)
 
-### Screen Files
-- Naming format:
+#### Screen
+
 ```
-
 STOCOIN{NN}S1.jsx
-
-```
-- Examples:
-- `STOCOIN02S1.jsx`
-- `STOCOIN03S1.jsx`
-
-Rules:
-- `STOCOIN` is fixed prefix
-- `{NN}` is a sequential number (increment only)
-- `S1` means **Screen**
-- All list/detail admin screens must follow this format
-- Do NOT use descriptive filenames for screen components
-
-
-File naming is STRICT.
-The filename MUST be exactly:
-- STOCOIN{NN}S1.jsx (screen)
-- STOCOIN{NN}P1.jsx (popup)
-
-No suffix, prefix, or alternative extensions are allowed.
-(e.g. STOCOIN02S1Screen.jsx, STOCOIN02S1Page.jsx, .tsx are forbidden)
-
-
-### Popup Files
-- Naming format:
 ```
 
+#### Popup
+
+```
 STOCOIN{NN}P1.jsx
-
 ```
-- Examples:
-- `STOCOIN02P1.jsx`
-- `STOCOIN03P1.jsx`
 
 Rules:
-- `P1` means **Popup**
-- Popup sequence number must align with related screen when applicable
 
-Popup files (P1) must be created ONLY when:
-- A separate modal/dialog UI is explicitly required by SSOT
-- The popup has its own user interaction lifecycle
-
-Inline detail sections MUST NOT be implemented as popups.
-
-
----
-
-## Frontend Screen Structure (Fixed GODIS Pattern)
-
-Default layout (MANDATORY):
-- Top: Search / Filter section (`GSearchHeader`)
-- Main: Data grid (`GDataGrid`)
-- Bottom or Side: Detail / Form (`GLayoutGroup` + `GLayoutItem`)
-- Actions: `GButton` (with auth control if required)
-
-State naming conventions:
-- Search conditions: `searchParams`
-- Grid rows: `rows`
-- Selected row: `selectedRow`
-- Popup state: local state only
+* `STOCOIN`: fixed prefix
+* `{NN}`: two-digit sequential number (increment only)
+* `S1`: Screen
+* `P1`: Popup
+* One screen per file
+* ❌ Descriptive filenames are forbidden
+* ❌ `.tsx` is forbidden
+* ❌ Arbitrary prefixes or suffixes are forbidden
 
 ---
 
-## Backend Development Rules
-Copilot must never break this order:
+### 5.3 Frontend Screen Structure (FIXED GODIS PATTERN)
 
-1) Controller
- - Routing
- - Request validation
- - Response wrapping
-2) Service
- - Business logic
- - Transaction boundaries
-3) Mapper (Java Interface)
- - DB access signatures
-4) Mapper.xml
- - SQL
- - Dynamic queries
- - Query tuning
+Default layout (**MANDATORY**):
 
-Forbidden:
-- SQL in Service classes
-- Direct DB access in Controllers
-- Annotation-based SQL in Mapper interfaces
+1. **Search / Filter**
+
+   * `GSearchHeader`
+2. **Main List**
+
+   * `GDataGrid`
+3. **Detail / Form**
+
+   * `GLayoutGroup`
+   * `GLayoutItem`
+4. **Actions**
+
+   * `GButton`
+
+#### State Naming Conventions
+
+* Search conditions: `searchParams`
+* Grid rows: `rows`
+* Selected row: `selectedRow`
+* Popup open/close state: **local state only**
 
 ---
 
-## Output Quality Gate (MANDATORY)
+## 6. Backend Rules (Spring Boot + MyBatis)
 
-### One Screen = One API Set
-For each screen, propose:
-- list
-- detail
-- create/update/delete (as required)
+### 6.1 Package Structure (MANDATORY)
+
+```
+src/main/java/com/godisweb/
+ ├ controller/
+ ├ service/
+ ├ mapper/
+ └ dto/
+```
+
+### 6.2 Mapper XML Location
+
+```
+src/main/resources/mapper/**/*.xml
+```
+
+---
+
+### 6.3 Development Order (NON-NEGOTIABLE)
+
+1. Controller
+
+   * Routing
+   * Request validation
+   * Response wrapping
+2. Service
+
+   * Business logic
+   * Transaction boundaries
+3. Mapper (Java Interface)
+
+   * Database access signatures
+4. Mapper.xml
+
+   * SQL
+   * Dynamic queries
+   * Query optimization
+
+#### Forbidden
+
+* ❌ SQL inside Controller or Service
+* ❌ Annotation-based SQL
+* ❌ Direct DB access from Controller
+
+---
+
+## 7. Output Quality Gate (MANDATORY)
+
+### 7.1 One Screen = One API Set
+
+For each screen, Copilot must identify and propose:
+
+* list
+* detail
+* create / update / delete (if required by SSOT)
 
 If not defined:
-- Update SSOT first
-- Then implement
 
-### Frontend Output
-Must include:
-- Screen component (correct filename & path)
-- Required child components
-- API module (or reference to existing API SSOT)
-
-When generating frontend code, Copilot MUST explicitly state:
-- File path
-- File name
-
-This confirmation must appear BEFORE the code output.
-
-
-### Backend Output
-Must include:
-- Controller
-- Service
-- Mapper interface
-- Mapper.xml
+* ❌ Do NOT implement
+* ✅ Update SSOT first
 
 ---
 
-## Absolute Prohibitions
-- Do NOT rename screen files arbitrarily
-- Do NOT place screens outside `src/screens/IWon`
-- Do NOT invent API endpoints when a frontend API contract exists
-- Do NOT modify frontend API files unless explicitly requested
-```
+### 7.2 Frontend Output Requirements
+
+Frontend output **MUST include**:
+
+* Screen component
+* Required child components
+* API module usage (or reference to an existing API contract)
+
+Copilot MUST explicitly state **BEFORE generating code**:
+
+* File path
+* File name
+
+---
+
+### 7.3 Backend Output Requirements
+
+Backend output **MUST include all of the following**:
+
+* Controller
+* Service
+* Mapper interface
+* Mapper.xml
+
+Partial output is ❌ forbidden.
+
+---
+
+## 8. Absolute Prohibitions
+
+* ❌ Generate Mobile / App-related code
+* ❌ Change screen file paths
+* ❌ Rename screen files arbitrarily
+* ❌ Generate APIs, fields, or UI not defined in SSOT
+* ❌ Modify existing `src/api` files without explicit instruction
+* ❌ Implement based on assumptions or guesses
+
+---
+
+## 9. Final Principle
+
+> **Design is the executable contract.**
+> Copilot is an implementation tool,
+> **not a decision maker.**
 
 ---
