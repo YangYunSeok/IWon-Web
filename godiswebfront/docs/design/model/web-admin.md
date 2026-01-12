@@ -1,8 +1,8 @@
 # Web Admin 데이터 모델 (SSOT)
 
-> 본 문서는 `docs/기본설계문서/api_및_데이터모델_명세서_관리자용.md` 의 `## 2. 데이터 모델` 절을
+> 본 문서는 `docs/기본설계문서/api_및_데이터모델_명세서(관리자용).md` 의 `## 2. 데이터 모델` 절을
 > MCP/Codegen 구조에 맞춰 `docs/design/model/*` 영역으로 이관한 결과입니다.
-> 공통 타입/enum 은 `docs/design/model/common-types.md` 와 `docs/design/model/web-common-types.md` 를 참조합니다.
+> 공통 타입/enum 은 `docs/design/model/web-common-types.md` 를 참조합니다.
 
 ## 1. 대시보드 / 통계
 
