@@ -20,9 +20,6 @@
 | ApprovalStatus | 'pending' \| 'approved' \| 'rejected' | 승인 요청 상태. 대기/승인/반려를 의미한다. |
 | CoinUsageCategory | 'welfare' \| 'payment' | 복지 코인 vs 결제 코인 용도 구분. UI에서는 파이 차트/필터 등에 사용한다. |
 
-| CoinType | 'welfare' \| 'payment' | 코인 식별자(동일 값). API/모델 타입으로 명시적으로 사용 가능 |
-| MonthlyPayeeStatus | 'scheduled' \| 'paid' \| 'cancelled' | 월별 지급 대상 상태(스케줄/지급/취소) |
-
 ## 3. 상태/프로세스 값
 
 - 긴 처리 플로우 상태는 `ProcessStatus` (참조: `docs/design/model/common-types.md`) 정의를 따른다.

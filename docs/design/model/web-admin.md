@@ -16,9 +16,6 @@
 | checkedAt | ISODateString | 검증 시각 |
 | blockHeight | number | 기준 블록 높이 |
 
-| coinTotals | { coinType: string, dbTotal: IWC, chainTotal: IWC, matched: boolean }[] | 코인별 합계 및 일치 여부 리스트 |
-| note | string (optional) | 추가 검증 메모/경고 메시지 |
-
 ### DailyMetrics
 
 | 필드 | 타입 | 설명 |
@@ -27,33 +24,6 @@
 | minted | IWC | 당일 발행 총액 |
 | burned | IWC | 당일 회수/사용 총액 |
 | pendingApprovals | number | 승인 대기 건수 |
-
-## 4. 월별 지급 대상자 (Monthly Payee)
-
-### MonthlyPayee
-
-| 필드 | 타입 | 설명 |
-| --- | --- | --- |
-| id | string | 레코드 ID |
-| year | number | 지급 연도 |
-| month | number | 지급 월(1-12) |
-| employeeId | string | 사번 |
-| name | string | 수혜자 이름 |
-| coinType | string | 지급 코인 종류 |
-| amount | IWC | 지급 금액 |
-| reason | string (optional) | 지급 사유/메모 |
-| status | string | 상태(예: scheduled/paid/cancelled) |
-| scheduledAt | ISODateString (optional) | 예약 지급 시점 |
-| paidAt | ISODateString (optional) | 지급 완료 시각 |
-| createdBy | string | 등록자(admin user id) |
-| createdAt | ISODateString | 등록 시각 |
-
-### MonthlyPayeeList
-
-| 필드 | 타입 | 설명 |
-| --- | --- | --- |
-| items | MonthlyPayee[] | 목록 |
-| total | number | 전체 건수 |
 
 ## 2. 임직원 / 지갑
 

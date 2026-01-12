@@ -31,8 +31,25 @@
 
 ## 4. 향후 API 맵 (제안)
 
-- `GET /admin/monthly-plans?month=YYYY-MM`
-- `POST /admin/monthly-plans/{month}/confirm`
-- `POST /admin/monthly-plans/{month}/import-prev`
+### 권장 API 매핑 (현재 문서 기준)
 
-> 실제 API 확정 시 `docs/design/api/web-admin.md` 와 본 문서를 동시 업데이트한다.
+- `GET /admin/monthly-payees?year=YYYY&month=MM&coinType={coin}&status={status}`
+   - 월별 대상자 목록 조회. 응답: `MonthlyPayeeList` (items: `MonthlyPayee[]`).
+- `POST /admin/monthly-payees`
+   - 월별 대상자 일괄 등록/업데이트(업로드). 요청 바디: `{ year, month, items: [{ employeeId, coinType, amount, reason }] }`.
+- `PUT /admin/monthly-payees/{id}`
+   - 개별 대상자 수정.
+- `DELETE /admin/monthly-payees/{id}`
+   - 개별 대상자 삭제.
+- `POST /admin/monthly-payees/bulk-delete`
+   - 일괄 삭제(요청 바디: `ids: string[]`).
+- `GET /admin/monthly-payees/export?year=YYYY&month=MM&coinType=...`
+   - CSV/XLSX 내보내기 (UI 다운로드용).
+- `POST /admin/monthly-payees/{year}-{month}/confirm`
+   - 해당 월 계획 확정(옵션): 확정 시 `MonthlyPayee.status`를 `paid` 또는 `scheduled`로 변경하고, 필요 시 `approvals` 생성으로 실제 지급 워크플로우를 트리거합니다.
+- `POST /admin/monthly-payees/{year}-{month}/import-prev`
+   - 전월 데이터 가져오기: 기존 월(예: YYYY-MM)의 레코드를 복사하여 편집 가능한 신규 레코드로 생성합니다.
+
+Note: 백엔드 구현은 `MonthlyPayee` 모델(예: `id, year, month, employeeId, name, coinType, amount, reason, status, scheduledAt, paidAt, createdBy, createdAt`)을 기준으로 하며, 실제 지급 실행은 `approvals`/`admin_transactions` 워크플로우로 연결하는 방식으로 권장합니다.
+
+> 실제 API 확정 시 `docs/design/api/web-admin.md` 및 `docs/design/model/web-admin.md`와 본 문서를 동기화하세요.

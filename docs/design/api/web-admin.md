@@ -76,8 +76,6 @@ responseType: SupplySummary
 - Request: 바디 없음
 - Response: `SupplySummary`
 
-Note: `SupplySummary`는 코인 구분을 포함하도록 확장될 수 있습니다. UI에서 코인별 합계를 표시하려면 모델의 `coinTotals`(각 코인별 dbTotal/chainTotal/matched)를 함께 반환하세요.
-
 #### 3.1.2. 금일 주요 지표
 
 - **Method/Path**: `GET /admin/stats/daily`
@@ -220,63 +218,6 @@ responseType: AdminTransaction
 
 - Path Param: `approvalId`
 - Response: `AdminTransaction`
-
-### 3.5. 월별 지급 대상자 관리
-
-#### 3.5.1. 월별 지급 대상자 목록 조회
-
-- **Method/Path**: `GET /admin/monthly-payees`
-- **Auth**: bearer
-
-```@codegen
-id: webMonthlyPayee.list
-resource: webMonthlyPayee
-method: GET
-path: /admin/monthly-payees
-auth: bearer
-requestType: ListMonthlyPayeesRequest
-responseType: MonthlyPayeeList
-```
-
-Query:
-| 파라미터 | 타입 | 설명 |
-| --- | --- | --- |
-| year | number (optional) | 연도 필터 |
-| month | number (optional) | 월 필터 |
-| coinType | string (optional) | 코인 필터 |
-| status | string (optional) | 상태 필터 |
-
-- Response: `MonthlyPayeeList`
-
-#### 3.5.2. 월별 지급 대상자 일괄 등록
-
-- **Method/Path**: `POST /admin/monthly-payees`
-- **Auth**: bearer
-
-```@codegen
-id: webMonthlyPayee.createBulk
-resource: webMonthlyPayee
-method: POST
-path: /admin/monthly-payees
-auth: bearer
-requestType: CreateMonthlyPayeesRequest
-responseType: MonthlyPayeeList
-```
-
-Request Body: `CreateMonthlyPayeesRequest` (예: year, month, items[{ employeeId, coinType, amount, reason }])
-
-- Response: 등록된 `MonthlyPayeeList` (중복/유효성 검사 결과 포함 가능)
-
-#### 3.5.3. 월별 지급 대상자 수정/삭제
-
-- 단건 수정: `PUT /admin/monthly-payees/{id}`
-- 단건 삭제: `DELETE /admin/monthly-payees/{id}`
-- 일괄 삭제: `POST /admin/monthly-payees/bulk-delete` (id 리스트)
-
-#### 3.5.4. 월별 지급 파일 내보내기
-
-- **Method/Path**: `GET /admin/monthly-payees/export?year=YYYY&month=MM&coinType=...`
-- CSV/XLSX로 내보내기 (UI에서 다운로드)
 
 ## 4. 문서 유지보수 메모
 

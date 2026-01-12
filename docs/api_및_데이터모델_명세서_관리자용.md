@@ -81,7 +81,6 @@ responseType: <TypeName>
 | matched | boolean | 일치 여부 |
 | checkedAt | ISODateString | 검증 시각 |
 | blockHeight | number | 기준 블록 높이 |
-| CoinType | 'welfare' \| 'payment' | 코인 유형 |
 
 #### DailyMetrics
 
@@ -91,7 +90,6 @@ responseType: <TypeName>
 | minted | IWC | 금일 발행 |
 | burned | IWC | 금일 소각/사용 |
 | pendingApprovals | number | 승인 대기 건수 |
-| CoinType | 'welfare' \| 'payment' | 코인 유형 |
 
 ---
 
@@ -134,32 +132,6 @@ responseType: <TypeName>
 | totalAmount | IWC | 총 금액 |
 | status | ApprovalStatus | 승인 상태 |
 | requestedAt | ISODateString | 요청 시각 |
-
-### 2.4. 월별 지급 대상자 관리
-월별로 다수의 수혜자를 등록/관리하여, 월별 일괄 지급(스케줄링) 또는 검토용으로 사용하는 모델입니다.
-
-#### MonthlyPayee
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| id | string | 레코드 ID |
-| year | number | 지급 연도(예: 2026) |
-| month | number | 지급 월(1-12) |
-| employeeId | string | 사번 |
-| name | string | 수혜자 이름 |
-| coinType | CoinType | 지급 코인 종류 |
-| amount | IWC | 지급 금액 |
-| reason | string (optional) | 지급 사유/메모 |
-| status | MonthlyPayeeStatus | 상태(스케줄/지급/취소) |
-| scheduledAt | ISODateString (optional) | 예약 지급 시점 |
-| paidAt | ISODateString (optional) | 지급 완료 시각 |
-| createdBy | string | 등록자(admin user id) |
-| createdAt | ISODateString | 등록 시각 |
-
-#### MonthlyPayeeList
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| items | MonthlyPayee[] | 목록 |
-| total | number | 전체 건수 |
 
 ---
 
@@ -306,68 +278,6 @@ auth: bearer
 requestType: ConfirmApprovalRequest
 responseType: AdminTransaction
 ```
-
-### 3.5. 월별 지급 대상자 관리
-
-#### 3.5.1. 월별 지급 대상자 목록 조회
-- **Method/Path**: `GET /admin/monthly-payees`
-- **Auth**: bearer
-
-```@codegen
-id: monthlyPayee.list
-resource: monthlyPayee
-method: GET
-path: /admin/monthly-payees
-auth: bearer
-requestType: ListMonthlyPayeesRequest
-responseType: MonthlyPayeeList
-```
-Query:
-| 파라미터 | 타입 | 설명 |
-|---|---|---|
-| year | number (optional) | 연도 필터 |
-| month | number (optional) | 월 필터 |
-| coinType | CoinType (optional) | 코인 필터 |
-| status | MonthlyPayeeStatus (optional) | 상태 필터 |
-
-Response: `MonthlyPayeeList`
-
----
-
-#### 3.5.2. 월별 지급 대상자 일괄 등록
-- **Method/Path**: `POST /admin/monthly-payees`
-- **Auth**: bearer
-
-```@codegen
-id: monthlyPayee.createBulk
-resource: monthlyPayee
-method: POST
-path: /admin/monthly-payees
-auth: bearer
-requestType: CreateMonthlyPayeesRequest
-responseType: MonthlyPayeeList
-```
-Request Body (예):
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| year | number | 연도 |
-| month | number | 월 |
-| items | { employeeId: string, coinType: CoinType, amount: IWC, reason?: string }[] | 대상 목록 |
-
-- Response: 등록된 `MonthlyPayeeList` (중복/유효성 검사 결과 포함 가능)
-
----
-
-#### 3.5.3. 월별 지급 대상자 수정 / 삭제
-- 단건 수정: `PUT /admin/monthly-payees/{id}`
-- 단건 삭제: `DELETE /admin/monthly-payees/{id}`
-- 일괄 삭제: `POST /admin/monthly-payees/bulk-delete` (id 리스트)
-
----
-
-#### 3.5.4. 월별 지급 파일 내보내기
-- **Method/Path**: `GET /admin/monthly-payees/export?year=YYYY&month=MM&coinType=...`
-- CSV/XLSX로 내보내기 (UI에서 다운로드)
 
 ---
 
