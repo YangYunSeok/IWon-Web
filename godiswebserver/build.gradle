@@ -56,7 +56,7 @@ dependencies {
     
     // 자바와 블록체인을 연결하는 핵심 라이브러리
     implementation 'org.web3j:core:4.10.3'
-    implementation 'org  .web3j:contracts:4.10.3'
+    implementation 'org.web3j:contracts:4.10.3'
     implementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
