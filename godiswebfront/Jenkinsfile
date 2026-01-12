@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+
+    environment {
+        DEPLOY_DIR = "/usr/local/nginx/html"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                deleteDir()
+                checkout scm
+
+                script {
+                    env.GIT_COMMIT_MESSAGE = sh(
+                        script: "git log -1 --pretty=%B",
+                        returnStdout: true
+                    ).trim()
+                }
+            }
+        }
+
+        stage('Install Dependencies') { 
+            steps {
+                echo "📦 NPM 패키지 설치"
+                sh "npm install"
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "⚙️ React 앱 빌드"
+                sh "npm run build"
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "🚀 빌드 결과물을 Nginx 디렉토리로 배포"
+
+                sh """
+                    sudo rm -rf ${DEPLOY_DIR}/* || true
+                    sudo cp -r ${WORKSPACE}/dist/* ${DEPLOY_DIR}/
+                """
+            }
+        }
+
+        stage('Nginx Reload') {
+            steps {
+                echo "🔁 Nginx Reload"
+                sh "sudo systemctl reload nginx"
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend (
+                message: """
+*React 빌드 성공 🎉*
+*Job:* ${env.JOB_NAME} [${env.BUILD_NUMBER}]
+*URL:* ${env.BUILD_URL}
+*커밋 메시지:* ${env.GIT_COMMIT_MESSAGE}
+"""
+            )
+        }
+        failure {
+            slackSend (
+                message: """
+*React 빌드 실패 ❌*
+*Job:* ${env.JOB_NAME} [${env.BUILD_NUMBER}]
+*URL:* ${env.BUILD_URL}
+*커밋 메시지:* ${env.GIT_COMMIT_MESSAGE}
+"""
+            )
+        }
+    }
+}

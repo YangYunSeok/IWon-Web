@@ -1,0 +1,14 @@
+.push-pagination__container {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+  margin-top: 8px;
+}
+
+.push-pagination .MuiPagination-ul {
+  gap: 8px;
+}
+
+.push-pagination .MuiPaginationItem-root.Mui-selected {
+  background-color: rgba(0, 0, 0, 0.06);
+}

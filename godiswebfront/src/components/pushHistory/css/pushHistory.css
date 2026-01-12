@@ -1,0 +1,23 @@
+/* 테이블 전체 높이 고정 + 내부만 스크롤 */
+.ph-tableContainer {
+  height: 350px;      /* ✅ 높이 고정 */
+  overflow-y: auto;   /* ✅ 따옴표 절대 X */
+}
+
+/* 기본 셀: 한 줄, 높이 일정 */
+.ph-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 메시지 컬럼: 폭만 조금 넓게 */
+.ph-msgCell {
+  max-width: 100%;   /* 필요에 따라 조절 */
+}
+
+/* "조회 결과가 없습니다" 메시지는 가운데 */
+.ph-emptyText {
+  padding: 24px 0;
+  color: #777;
+}

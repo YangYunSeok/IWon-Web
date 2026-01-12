@@ -1,0 +1,27 @@
+/* 카드 박스 */
+.ui-card {
+  background: #efefef;
+  border-radius: 4px;
+  padding: 18px 22px;
+  margin: 0 auto;
+  max-width: 720px;
+}
+
+/* 한 줄에 (라벨|값) × 2 세트 배치 */
+.ui-row {
+  display: grid;
+  grid-template-columns: auto 16px 1fr 32px auto 16px 1fr;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  margin-bottom: 12px;
+}
+.ui-row:last-child { margin-bottom: 0; }
+
+.ui-label { min-width: 56px; font-weight: 500; color: #616161; }
+.ui-sep   { color: #9e9e9e; }
+.ui-value { color: #424242; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ui-spacer { width: 32px; }
+
+/* 반응형에서 1열로 떨어지지 않도록 미디어쿼리 제거 */

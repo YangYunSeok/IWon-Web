@@ -1,0 +1,22 @@
+[
+  {
+    "menuId": "121001",
+    "menuNm": "청약등록관리",
+    "clssNm": "STOFR.SubscriptionManagement.STOOFRSB01S1.js"
+  },
+  {
+    "menuId": "990501",
+    "menuNm": "공통코드",
+    "clssNm": "GPCL.OPR.Code.GPCLOPRCD01S1.js"
+  },
+  {
+    "menuId": "990503",
+    "menuNm": "계층코드",
+    "clssNm": ""
+  },
+  {
+    "menuId": "990504",
+    "menuNm": "메시지코드",
+    "clssNm": ""
+  }
+]
