@@ -1,7 +1,7 @@
 # API 및 데이터모델 명세서 (Web Admin)
 
 > 본 문서는 `docs/design/_index.md` 기준의 **관리자 웹 SSOT(API 계약)** 입니다.
-> 기존 문서 `docs/기본설계문서/api_및_데이터모델_명세서_관리자용.md` 의 내용을 역할별 문서로 재구성했습니다.
+> 기존 문서 `docs/기본설계문서/api_및_데이터모델_명세서(관리자용).md` 의 내용을 역할별 문서로 재구성했습니다.
 
 - 대상 클라이언트: Admin Web Console (Operator / Approver)
 - 통신: HTTPS + JSON
@@ -42,12 +42,11 @@ responseType: <TypeName>
 
 ### 1.2. 공통 타입 / Enum
 
-- 앱 전역 타입: `docs/design/model/common-types.md`
-- 관리자 전용 확장: `docs/design/model/web-common-types.md`
+- 관리자 웹 공통 타입/Enum (SSOT): `docs/design/model/web-common-types.md`
 
 ### 1.3. 공통 에러 코드
 
-- 1차 리스트: `docs/design/model/error-codes.md`
+- 관리자 웹 에러 코드/UX 매핑 (SSOT): `docs/design/model/web-error-codes.md`
 - 관리자 전용 확장: `docs/design/model/web-error-codes.md`
 
 ## 2. 데이터 모델(참조)
@@ -222,5 +221,5 @@ responseType: AdminTransaction
 ## 4. 문서 유지보수 메모
 
 1. UI/QA에서 화면 플로우를 변경하면 **UI 문서 → 모델 문서 → API 문서** 순으로 갱신한다.
-2. Codegen 테스트 시 `codegen/scripts/validate-docs.js` 로 본 문서의 `@codegen` 블록을 검증한다.
+2. Codegen 테스트 시 `codegen/` 에서 `npm run docs:lint` 로 본 문서의 `@codegen` 블록을 검증한다.
 3. 새로운 관리자 리소스가 추가되면 파일명을 `web-*.md` 규칙에 맞춰 확장한다.
