@@ -1,0 +1,98 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID
+        http-only: true
+        secure: false  # HTTPS 사용 시 true로 변경
+        same-site: lax
+        path: /
+        max-age: 1800  # 30분 (초 단위) 테스트를 위하여 1분으로
+    context-path: /
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        # health, info는 기본으로 노출되지만, sessions를 명시적으로 추가하여 노출합니다.
+        include: "health,info,sessions"    
+---
+spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    # DB 접속 정보를 프로젝트 요구사항에 맞게 업데이트했습니다.
+    # database name has been set to `menu_tree`. Change it if your schema differs.
+    # Update the database name to GODIS as per the latest requirement
+    # url: jdbc:mariadb://localhost/GODIS?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+    #url: jdbc:mariadb://192.168.0.120:3306/GODIS?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+    url: jdbc:mariadb://localhost:3307/IWON?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+    username: root
+    password: "1234"
+    hikari:
+      maximum-pool-size: 10
+  mvc:
+    pathmatch:
+      matching-strategy: ant-path-matcher
+
+  kafka:
+    bootstrap-servers: 192.168.0.122:9092
+    consumer:
+      group-id: notification-consumer
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=24h
+  
+  session:
+    timeout: 30m # test를 위해 1분 세션
+    store-type: none # 기본 메모리 저장소 (redis로 변경시 redis)
+
+  config:
+    import: classpath:properties/gpclweb.yml # 설정파일 변수 사용시 해당파일에 추가해서 사용
+
+
+app:
+  datasource:
+    maria120:
+      driver-class-name: org.mariadb.jdbc.Driver
+      enabled: true
+      jdbc-url: jdbc:mariadb://localhost:3306/GODIS?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
+      username: sbtAdmin
+      password: "iteyes123$"
+      pool-name: hikari-maria-120
+      maximum-pool-size: 10
+      minimum-idle: 0
+      initialization-fail-timeout: 0
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: "SELECT 1"
+
+# application.yml
+logging:
+  level:
+    com.godisweb.mapper: DEBUG
+    org.apache.ibatis: DEBUG
+    org.apache.ibatis.logging.jdbc: DEBUG
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
+
+mybatis:
+  # The package containing your domain classes; MyBatis will create short names automatically.
+  type-aliases-package: com.godisweb.model
+  # We are using annotation‑based SQL in the mapper, so mapper XMLs are optional. Leave this
+  # setting in case you add XML mappers later.
+  mapper-locations: classpath:mapper/**/*.xml
+
+  # Configure MyBatis to use Log4j2 for logging SQL statements. This
+  # implementation will delegate log messages to our Log4j2
+  # configuration (log4j2-spring.xml). When set to DEBUG level in
+  # Log4j2, executed SQL statements and parameters will be printed to
+  # the console.  
+  configuration:
+    #log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+    auto-mapping-behavior: FULL          # (권장) 별도 resultMap 없이 최대한 자동 매핑

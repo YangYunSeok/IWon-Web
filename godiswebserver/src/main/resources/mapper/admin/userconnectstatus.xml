@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godisweb.mapper.admin.UserConnectStatusMapper">
+
+	<select id="getUserConnectStatus" parameterType="map" resultType="map">
+	/* SQL ID : monitor.userconnectstatus.getUserConnectStatus */
+	<![CDATA[
+	 SELECT A.USR_ID                                  				AS USR_ID
+	      , DATE_FORMAT(A.CONN_DD, '%Y-%m-%d')		  				AS CONN_DD
+          , TIME_FORMAT(A.CONN_STRT_TM, '%H:%i:%s')   				AS CONN_STRT_TM
+	      , IFNULL(DATE_FORMAT(CONVERT(A.END_DD, DATETIME), '%Y-%m-%d'),'')		      AS END_DD
+          , IFNULL(TIME_FORMAT(A.CONN_END_TM,'%H:%i:%s'),'') 	AS CONN_END_TM
+	      , A.CLIENT_IP                                         AS CLIENT_IP
+          , CASE (IFNULL(A.SECU_PROGM_USE_YN, 'Y')) WHEN 'Y' THEN 'Yes' WHEN 'N' THEN 'No' END AS SECU_PROGM_USE_YN
+		  , B.USR_NM  													  AS USR_NM
+	      , B.MBR_ID                                                   AS MBR_ID
+	      , B.SYS_TP_CD                                                   AS SYS_TP_CD
+	      , G.CD_VAL_NM                                                   AS TR_SYS_TP_NM
+	      , B.USR_TP_CD													AS USR_TP_CD
+	      , D.USR_GRP_NM											  AS USR_GRP_NM	      
+	      -- , CELLPHONE_NO                                           AS CELLPHONE_NO
+	      , CASE (IFNULL(C.PRSNT_LOGIN_YN,'Y')) WHEN 'Y' THEN 'Login' ELSE 'Logout' END AS PRSNT_LOGIN_YN
+	      , E.CD_VAL_NM                                                   AS TR_USR_TP_NM
+	   FROM GPCL_USR_CONN_DTL A 
+	   JOIN GPCL_USR B          ON A.USR_ID = B.USR_ID
+	   JOIN GPCL_USR_LOGIN C    ON A.USR_ID = C.USR_ID AND A.LOGIN_USR_KEY_VAL = C.LOGIN_USR_KEY_VAL
+	   LEFT OUTER JOIN GPCL_CM_CD_VAL E ON E.GRP_CD_ID = 'USR_TP_CD' AND B.USR_TP_CD = E.CD_VAL  -- [고정]그룹코드ID
+	   JOIN GPCL_CM_CD_VAL G ON  G.CD_VAL = B.SYS_TP_CD AND G.GRP_CD_ID         = 'SYS_TP_CD'
+	   JOIN GPCL_USR_GRP D ON B.USR_GRP_ID = D.USR_GRP_ID
+	  WHERE B.SYS_TP_CD  	    = #{SYS_TP_CD}   -- [조건]TR시스템구분코드
+	   ]]>
+	   <if test='USR_TP_CD != null and USR_TP_CD != ""'>
+	   <![CDATA[
+	    AND B.USR_TP_CD   	= #{USR_TP_CD}   -- [조건]TR사용자유형코드
+	   ]]>
+	   </if>
+	   <if test='USR_GRP_ID != null and USR_GRP_ID != ""'>
+	   <![CDATA[
+	    AND B.USR_GRP_ID   	= #{USR_GRP_ID}   -- [조건]사용자그룹
+	   ]]>
+	   </if>
+	   <if test='PRSNT_LOGIN_YN != null and PRSNT_LOGIN_YN != ""'>
+	   <if test="PRSNT_LOGIN_YN == '01'"> 
+	   <![CDATA[
+	    AND END_DD IS NULL 
+	    AND C.PRSNT_LOGIN_YN = 'Y'  -- [조건]현재로그인여부 TEST
+	   ]]>
+	   </if>
+	   <if test="PRSNT_LOGIN_YN == '02'">
+	   <![CDATA[
+	    AND END_DD IS NOT NULL
+	   ]]>
+	   </if>
+	   </if>
+	  <![CDATA[ 
+      ORDER BY C.PRSNT_LOGIN_YN DESC, A.CONN_DD DESC, A.CONN_STRT_TM DESC
+      ]]> 
+	</select>
+	
+	<select id="getUserConnectDetail" parameterType="map" resultType="map">
+	/* SQL ID : monitor.userconnectstatus.getUserConnectDetail */
+	<![CDATA[
+	SELECT 시스템		    AS TR_SYS_TP_NM
+	     , 접속상태		AS PRSNT_LOGIN_YN
+	     , 사용자ID		AS USR_ID
+	     , 사용자명		AS USR_NM
+	     , 사용자유형ID	AS USR_GRP_ID
+	     , 사용자유형		AS USR_GRP_NM
+	     , 접속IP		    AS CLIENT_IP
+	     , 날짜		    AS CONN_DD
+	     , 시간		    AS CONN_STRT_TM
+	     , DAY_CHK
+	  FROM 
+	     (	        
+	      SELECT #{SYS_TP_CD}		    AS 시스템
+	           , 'Login'		AS 접속상태
+	           , A.USR_ID		AS 사용자ID
+	           , B.USR_NM		AS 사용자명
+	           , C.USR_GRP_ID	AS 사용자유형ID
+	           , C.USR_GRP_NM	AS 사용자유형
+	           , A.CLIENT_IP	AS 접속IP
+	           , A.USR_CONN_SEQ           
+	           , DATE_FORMAT(A.CONN_DD, '%Y-%m-%d') AS 날짜
+	           , TIME_FORMAT(A.CONN_STRT_TM, '%H:%i:%s') AS 시간           
+	           , A.CONN_DD AS DAY_CHK
+	        FROM GPCL_USR_CONN_DTL	A
+	        JOIN GPCL_USR B
+	          ON A.USR_ID = B.USR_ID	   
+	        JOIN GPCL_USR_GRP		C 
+	          ON B.USR_GRP_ID = C.USR_GRP_ID
+	       
+	       UNION ALL
+		   	   
+		  SELECT #{SYS_TP_CD}		    AS 시스템
+	           , 'Logout'		AS AA
+	           , A.USR_ID		AS 사용자ID
+	           , B.USR_NM		AS 사용자명
+	           , C.USR_GRP_ID	AS 사용자유형ID
+	           , C.USR_GRP_NM	AS 사용자유형
+	           , A.CLIENT_IP	AS 접속IP
+	           , A.USR_CONN_SEQ    
+	           , DATE_FORMAT(A.CONN_DD, '%Y-%m-%d') AS 날짜
+	           , TIME_FORMAT(A.CONN_STRT_TM, '%H:%i:%s') AS 시간  
+	           , A.END_DD AS DAY_CHK
+	        FROM GPCL_USR_CONN_DTL	A
+	        JOIN GPCL_USR B 
+	          ON A.USR_ID = B.USR_ID 
+	        JOIN GPCL_USR_GRP	C 
+	          ON B.USR_GRP_ID = C.USR_GRP_ID
+	       WHERE 1=1
+	         AND END_DD IS NOT NULL
+	     ) T1 
+	     WHERE 1=1
+	       AND 시스템 = #{SYS_TP_CD}   -- [조건]TR시스템구분코드
+	       AND DAY_CHK  BETWEEN #{FROM_DD} AND #{TO_DD}  	    
+	   ]]>	   
+	   <if test='USR_GRP_ID != null and USR_GRP_ID != ""'>
+	   <![CDATA[
+	       AND 사용자유형ID   	= #{USR_GRP_ID}   -- [조건]사용자그룹
+	   ]]>
+	   </if>
+	   <if test='PRSNT_LOGIN_YN != null and PRSNT_LOGIN_YN != ""'>
+	   <if test="PRSNT_LOGIN_YN == '01'">
+	   <![CDATA[	    
+	       AND 접속상태 = 'LOGIN'
+	   ]]>
+	   </if>
+	   <if test="PRSNT_LOGIN_YN == '02'">
+	   <![CDATA[	    
+	       AND 접속상태 = 'LOGOUT'
+	   ]]>
+	   </if>
+	   </if>
+	  <![CDATA[ 
+      ORDER BY T1.날짜 DESC , T1.시간 DESC
+      ]]> 
+	</select>
+	
+	<select id="getUserGroupPopup" parameterType="map" resultType="map">
+	
+	<![CDATA[
+    SELECT 
+        USR_ID,
+        USR_NM
+    FROM GPCL_USR
+    WHERE 1=1
+	]]>
+	<if test="USR_NM != null and USR_NM != ''">
+	    AND USR_NM = #{USR_NM}
+	</if>
+	</select>
+	
+	<select id="getUserConnectStatusDetail" parameterType="map" resultType="map">
+	<![CDATA[
+	SELECT A.CLIENT_IP
+         , IFNULL(CONCAT(DATE_FORMAT(A.CONN_DD, '%Y-%m-%d'), TIME_FORMAT(A.CONN_STRT_TM, '%H:%i:%s')), '') AS CONN_STRT_TM
+         , IFNULL(CONCAT(DATE_FORMAT(A.END_DD, '%Y-%m-%d'), TIME_FORMAT(A.CONN_END_TM, '%H:%i:%s')), '')   AS CONN_END_TM
+         , CASE (IFNULL(A.SECU_PROGM_USE_YN,'Y')) WHEN 'Y' THEN 'Yes' ELSE 'No' END                       AS SECU_PROGM_USE_YN
+	  FROM GPCL_USR_CONN_DTL A
+	  JOIN GPCL_USR B ON A.USR_ID = B.USR_ID
+	 WHERE A.CONN_DD BETWEEN #{CONN_DD} AND #{END_DD}
+	   AND A.USR_ID 	   = #{USR_ID}
+     ORDER BY CONN_STRT_TM DESC
+	]]>
+	</select>
+
+</mapper>

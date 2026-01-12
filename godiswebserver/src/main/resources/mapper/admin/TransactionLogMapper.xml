@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godisweb.mapper.admin.TransactionLogMapper">
+
+    <select id="getActionId" parameterType="map" resultType="map">
+    <![CDATA[
+        SELECT BUTN_ID
+           FROM GPCL_BUTN
+    ]]>
+    </select>
+    
+    <select id="getTransactionLog" parameterType="map" resultType="map">
+    <![CDATA[
+        SELECT DATE_FORMAT(GLOG.REG_DDTM, '%Y-%m-%d %T') AS REG_DDTM
+             , GUSR.USR_NM
+             , GMNU.MENU_NM
+             , GLOG.ACTION_ID
+             , GLOG.BUTN_ID
+             , GLOG.ACTION_URL
+             -- , FN_SEC_TO_HHMISS(GLOG.TRAN_SECOND) AS TRAN_SECOND
+             , ROUND(GLOG.TRAN_SECOND, 2) AS TRAN_SECOND   -- TOBE 변경됨
+             , GLOG.TRAN_CONTN
+             , GLOG.REQ_CONTN
+             , COUNT(1) OVER() AS TOT_CNT
+          FROM GPCL_TRAN_LOG GLOG
+          LEFT OUTER JOIN GPCL_USR GUSR
+            ON GLOG.REG_ID = GUSR.USR_ID
+          LEFT OUTER JOIN GPCL_MENU GMNU
+            ON GLOG.MENU_ID = GMNU.MENU_ID
+         WHERE 1=1
+             AND GLOG.REG_DDTM BETWEEN CONCAT(#{FROM_DD}, '000000') AND CONCAT(#{TO_DD}, '235959')
+    ]]>
+    <if test='USR_ID != NULL and USR_ID != ""'>
+    <![CDATA[
+       AND GUSR.USR_NM = #{USR_ID}
+    ]]>
+    </if>
+    <if test='TXT_MENU != null and TXT_MENU != ""'>
+	<![CDATA[
+	   AND REPLACE(UPPER(GMNU.MENU_NM), ' ', '')
+	       LIKE CONCAT('%', REPLACE(UPPER(#{TXT_MENU}), ' ', ''), '%')
+	]]>
+	</if>
+    <if test='BUTN_ID != NULL and BUTN_ID != ""'>
+    <![CDATA[
+       AND GLOG.BUTN_ID = #{BUTN_ID}
+    ]]>
+    </if>
+    <![CDATA[
+         ORDER BY TRAN_LOG_SEQ DESC
+         -- OFFSET #{CURR_PAGE} ROWS FETCH NEXT #{PAGE_CNT} ROWS ONLY
+    ]]>
+    </select>
+    
+</mapper>

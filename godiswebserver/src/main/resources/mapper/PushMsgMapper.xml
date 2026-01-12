@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.PushMsgMapper">
+
+    <select id = "countPushList" parameterType="String" resultType="Integer">
+        SELECT COUNT(*)
+        FROM GPCL_PUSH_MSG
+        WHERE USER_ID = #{username}
+    </select>
+
+    <select id="selectPushMsgs" parameterType="map" resultType="map">
+    <![CDATA[
+        SELECT PUSH_TP_CD
+             , PUSH_ID
+             , USER_ID
+             , PUSH_MSG_CONTN
+             , PUSH_SEND_DTTM
+        FROM GPCL_PUSH_MSG
+        WHERE USER_ID = #{username}
+        ORDER BY PUSH_SEND_DTTM DESC
+        LIMIT #{size}
+        OFFSET #{offset}
+        ]]>
+    </select>
+
+    <insert id = "insertPushMsg" parameterType="map">
+    <![CDATA[
+        INSERT INTO GPCL_PUSH_MSG
+        (
+              PUSH_TP_CD
+            , PUSH_ID
+            , USER_ID
+            , PUSH_MSG_CONTN
+            )
+        VALUES (
+                #{PUSH_TP_CD}
+              , #{PUSH_ID}
+              , #{USER_ID}
+              , #{PUSH_MSG_CONTN}
+               )
+    ]]>
+    </insert>
+</mapper>

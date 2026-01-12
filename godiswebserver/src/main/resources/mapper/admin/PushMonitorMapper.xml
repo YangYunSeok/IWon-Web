@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godisweb.mapper.admin.PushMonitorMapper">
+
+  <select id="getPushMonitor" parameterType="map" resultType="map">
+  <![CDATA[
+     SELECT 
+          CASE WHEN #{SYS_LANG}='K' THEN T2.CD_VAL_NM ELSE T2.CD_VAL_ENG_NM END AS PUSH_TP_CD_NM
+          , T1.USER_ID                                                                                     	  AS SND_USR_ID 
+          , T4.USR_NM                                                                                         AS SND_USR_NM
+          , T5.USR_NM                                                                                         AS RCV_USR_NM
+          , T1.PUSH_MSG_CONTN                                                                                 AS PUSH_MSG_CONTN
+    	  , DATE_FORMAT(T1.PUSH_SEND_DTTM, '%Y-%m-%d %H:%i:%s') AS REG_DDTM
+          , T1.PUSH_ID                                                                                         AS REG_ID
+          , T6.USR_NM                                                                                         AS REG_NM
+       FROM GPCL_PUSH_MSG  T1 
+	   LEFT OUTER JOIN GPCL_CM_CD_VAL T2 
+         ON T1.PUSH_TP_CD = T2.CD_VAL 
+        AND T2.GRP_CD_ID = 'PUSH_TP_CD'                               /* PUSH유형 */
+	   LEFT OUTER JOIN GPCL_USR       T4 
+         ON T1.USER_ID     = T4.USR_ID
+       LEFT OUTER JOIN GPCL_USR       T5 
+         ON T1.USER_ID     = T5.USR_ID
+       LEFT OUTER JOIN GPCL_USR       T6 
+         ON T1.USER_ID         = T6.USR_ID
+      WHERE 1=1
+          ]]>
+    <if test='SYS_TP_CD != NULL and SYS_TP_CD != ""'>
+    <![CDATA[
+    	AND T4.SYS_TP_CD = #{SYS_TP_CD}
+    ]]>
+    </if>
+    <if test='PUSH_TP_CD != NULL and PUSH_TP_CD != ""'>
+    <![CDATA[
+    	AND T1.PUSH_TP_CD = #{PUSH_TP_CD}
+    ]]>
+    </if>
+<![CDATA[
+ AND DATE(T1.PUSH_SEND_DTTM) = STR_TO_DATE(#{SEARCH_DD}, '%Y%m%d')
+  ORDER BY T1.PUSH_SEND_DTTM DESC
+]]>
+	</select>
+
+</mapper>

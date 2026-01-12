@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.MKMCLMapper">
+    <select id="selectMKMCL01Holy" parameterType="map" resultType="map">
+	<![CDATA[
+    /* SQL ID : selectMKMCL01Holy */
+    SELECT BAS_DD         AS BAS_DD
+         , HDAY_YN        AS HDAY_YN
+         , HDAY_TP_CD     AS HDAY_TP_CD
+        ,DATE_FORMAT(STR_TO_DATE(MKT_STRT_TM, '%H%i%s'), '%H:%i:%s') AS MKT_STRT_TM
+        ,DATE_FORMAT(STR_TO_DATE(MKT_END_TM, '%H%i%s'), '%H:%i:%s')   AS MKT_END_TM
+         , RSVDAY_YN      AS RSVDAY_YN
+      FROM GPCL_CALENDAR    
+     WHERE 1=1
+       AND BAS_DD BETWEEN #{SRCH_DD} AND #{SRCH_END_DD}
+	]]>
+    </select>
+
+	<insert id="insertHolyDate">
+	INSERT INTO GPCL_CALENDAR
+	(
+		  BAS_DD
+		, HDAY_YN
+		, HDAY_TP_CD
+		, RSVDAY_YN
+		, MKT_STRT_TM
+		, MKT_END_TM
+		, REG_DDTM
+		, REG_ID
+		, LST_ADJ_DDTM
+		, LST_ADJPRN_ID
+	)
+	VALUES
+	(
+		  #{BAS_DD}
+		, #{HDAY_YN}
+		, #{HDAY_TP_CD}
+		, #{RSVDAY_YN}
+		, DATE_FORMAT(STR_TO_DATE(#{MKT_STRT_TM}, '%H:%i:%s'), '%H%i%s')
+		, DATE_FORMAT(STR_TO_DATE(#{MKT_END_TM}, '%H:%i:%s'), '%H%i%s')
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{REG_ID}
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{LST_ADJPRN_ID}
+	)
+	</insert>
+
+	<update id="updateHolyDate">
+     UPDATE GPCL_CALENDAR
+        SET HDAY_YN = #{HDAY_YN}
+          , HDAY_TP_CD = #{HDAY_TP_CD}
+          , MKT_STRT_TM =DATE_FORMAT(STR_TO_DATE(#{MKT_STRT_TM}, '%H:%i:%s'), '%H%i%s')
+          , MKT_END_TM = DATE_FORMAT(STR_TO_DATE(#{MKT_END_TM}, '%H:%i:%s'), '%H%i%s')
+          ,  RSVDAY_YN = #{RSVDAY_YN}
+          , LST_ADJ_DDTM = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+          , LST_ADJPRN_ID = #{LST_ADJPRN_ID}
+      WHERE 1=1
+        AND BAS_DD = #{BAS_DD}
+	</update>
+
+	<update id="deleteHolyDate">
+     DELETE 
+           FROM GPCL_CALENDAR
+      WHERE 1=1
+        AND BAS_DD = #{BAS_DD}
+	</update>		
+
+	<select id="selectHolyDateAll" resultType="map">
+	<![CDATA[
+	/* SQL ID : selectHolyDateAll */
+	SELECT 
+		  BAS_DD        AS BAS_DD
+	FROM GPCL_CALENDAR	
+	WHERE 1=1
+	]]>
+	</select>	
+
+	<select id="selectMKMCL01Stdr" parameterType="map" resultType="map">
+	<![CDATA[
+	/* SQL ID : selectMKMCL01Stdr */
+	SELECT 
+	    IFNULL(BAS_DD, DATE_FORMAT(NOW(), '%Y%m%d')) AS BAS_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(BAS_DD, DATE_FORMAT(NOW(), '%Y%m%d')), -1, 'N'), '%Y-%m-%d') AS DD1AG_BZ_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(BAS_DD, DATE_FORMAT(NOW(), '%Y%m%d')),  1, 'N'), '%Y-%m-%d') AS DD1AF_BZ_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(BAS_DD, DATE_FORMAT(NOW(), '%Y%m%d')), -2, 'N'), '%Y-%m-%d') AS DD2AG_BZ_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(BAS_DD, DATE_FORMAT(NOW(), '%Y%m%d')),  2, 'N'), '%Y-%m-%d') AS DD2AF_BZ_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(BAS_DD, DATE_FORMAT(NOW(), '%Y%m%d')), -3, 'N'), '%Y-%m-%d') AS DD3AG_BZ_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(BAS_DD, DATE_FORMAT(NOW(), '%Y%m%d')),  3, 'N'), '%Y-%m-%d') AS DD3AF_BZ_DD
+	FROM GPCL_BAS_DD
+	]]>
+	</select>	
+
+	<select id="selectBizDate" parameterType="map" resultType="map">
+	<![CDATA[
+	/* SQL ID : getBizDate */
+	SELECT 
+	    #{BAS_DD} AS BAS_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(#{BAS_DD}, DATE_FORMAT(NOW(), '%Y%m%d')), -1, 'N'), '%Y-%m-%d') AS DD1AG_BZ_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(#{BAS_DD}, DATE_FORMAT(NOW(), '%Y%m%d')),  1, 'N'), '%Y-%m-%d') AS DD1AF_BZ_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(#{BAS_DD}, DATE_FORMAT(NOW(), '%Y%m%d')), -2, 'N'), '%Y-%m-%d') AS DD2AG_BZ_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(#{BAS_DD}, DATE_FORMAT(NOW(), '%Y%m%d')),  2, 'N'), '%Y-%m-%d') AS DD2AF_BZ_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(#{BAS_DD}, DATE_FORMAT(NOW(), '%Y%m%d')), -3, 'N'), '%Y-%m-%d') AS DD3AG_BZ_DD
+	  , DATE_FORMAT(FN_GET_BIZDAY(IFNULL(#{BAS_DD}, DATE_FORMAT(NOW(), '%Y%m%d')),  3, 'N'), '%Y-%m-%d') AS DD3AF_BZ_DD
+	FROM GPCL_BAS_DD
+	]]>
+	</select>
+
+	<insert id="insertBizDate">
+		INSERT INTO 
+		 GPCL_BAS_DD
+		(
+		   BAS_DD      
+		 , DD1AG_BZ_DD 
+		 , DD1AF_BZ_DD 
+		 , DD2AG_BZ_DD 
+		 , DD2AF_BZ_DD 
+		 , DD3AG_BZ_DD 
+		 , DD3AF_BZ_DD
+		 , REG_DDTM
+		 , REG_ID
+		 , LST_ADJ_DDTM
+		 , LST_ADJPRN_ID
+		)
+		VALUES
+		(
+		   #{BAS_DD}
+		 , DATE_FORMAT(#{DD1AG_BZ_DD}, "%Y%m%d")
+		 , DATE_FORMAT(#{DD1AF_BZ_DD}, "%Y%m%d")
+		 , DATE_FORMAT(#{DD2AG_BZ_DD}, "%Y%m%d")
+		 , DATE_FORMAT(#{DD2AF_BZ_DD}, "%Y%m%d")
+		 , DATE_FORMAT(#{DD3AG_BZ_DD}, "%Y%m%d")
+		 , DATE_FORMAT(#{DD3AF_BZ_DD}, "%Y%m%d")
+		 , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		 , #{REG_ID}
+		 , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		 , #{LST_ADJPRN_ID}
+		)
+	</insert>
+	
+	<update id="updateBizDate">
+		UPDATE GPCL_BAS_DD
+		 SET
+		   BAS_DD        = #{BAS_DD}
+		 , DD1AG_BZ_DD   = DATE_FORMAT(#{DD1AG_BZ_DD}, "%Y%m%d")
+		 , DD1AF_BZ_DD   = DATE_FORMAT(#{DD1AF_BZ_DD}, "%Y%m%d")
+		 , DD2AG_BZ_DD   = DATE_FORMAT(#{DD2AG_BZ_DD}, "%Y%m%d")
+		 , DD2AF_BZ_DD   = DATE_FORMAT(#{DD2AF_BZ_DD}, "%Y%m%d")
+		 , DD3AG_BZ_DD   = DATE_FORMAT(#{DD3AG_BZ_DD}, "%Y%m%d")
+		 , DD3AF_BZ_DD   = DATE_FORMAT(#{DD3AF_BZ_DD}, "%Y%m%d")
+		 , LST_ADJ_DDTM  = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		 , LST_ADJPRN_ID = #{LST_ADJPRN_ID}
+	</update>	
+	
+<select id="selectHolidayList" resultType="map" parameterType="map">
+	<![CDATA[
+	-- SELECT HOLDY_DD
+	--      , HOLDY_CITY_CD
+	--      , HOLDY_NM
+	--   FROM GPCL_CALND
+	--  ORDER BY HOLDY_CITY_CD
+	--      , HOLDY_DD
+	--      , HOLDY_NM
+	
+	WITH T_CAL AS 
+	(	
+		SELECT T1.BAS_DD      AS HOLDY_DD
+		     , 'KRSE'         AS HOLDY_CITY_CD
+		     , T1.HDAY_TP_CD  AS HDAY_TP_CD
+		     , T2.CD_VAL_NM   AS HOLDY_NM
+		  FROM GPCL_CALENDAR T1
+		  LEFT OUTER JOIN 
+		       GPCL_CM_CD_VAL T2
+			 ON T2.GRP_CD_ID = 'HDAY_TP_CD' 
+			AND T1.HDAY_TP_CD = T2.CD_VAL
+		 WHERE HDAY_YN = 'Y'
+   ) 
+   SELECT * 
+     FROM T_CAL
+	]]>
+	</select>		    
+</mapper>

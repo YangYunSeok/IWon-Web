@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+  This XML mapper defines the SQL statement for retrieving subscription
+  management records. The query uses a common table expression (CTE)
+  to assemble fields from multiple tables into a flattened projection
+  and then applies optional filtering by subscription status code. The
+  result columns are aliased to match the SubscriptionRecord Java class.
+-->
+<mapper namespace="com.godisweb.mapper.SubscriptionMapper">
+    <select id="selectSubscriptionRecords" parameterType="map" resultType="map">
+        WITH T_SUBSCR AS (
+            SELECT
+                CAST(A.TKN_SEC_ID AS CHAR) AS TKN_SEC_ID,
+                A.TKN_SEC_CD,
+                CAST(A.UNLYN_ID AS CHAR) AS UNLYN_ID,
+                A.TKN_SEC_NM,
+                A.OFFR_CRRN_CD,
+                A.ISSUE_DD,
+                A.OFFR_QTY,
+                A.OFFR_AMT,
+                B.SUBSCRP_SD,
+                B.SUBSCRP_ED,
+                B.SUBSCRP_STA_CD,
+                B.APVL_STA_CD,
+                F.CD_VAL_NM AS APVL_STA_NM,
+                C.UNLYN_KOR_NM,
+                D.CD_VAL_NM AS UNLYN_DTL_NM,
+                E.CD_VAL_NM AS SUBSCRP_STA_NM,
+                (SELECT SUM(SUBSCRP_QTY)
+                 FROM STTB_SUBSCRP
+                 WHERE TKN_SEC_ID = B.TKN_SEC_ID) AS SUBSCRP_QTY
+            FROM STTB_TKN_SEC_ISSUE A
+            INNER JOIN STTB_SUBSCRPMGR B
+                ON A.TKN_SEC_ID = B.TKN_SEC_ID
+                AND B.SUBSCRP_SEQ = 1
+            INNER JOIN STTB_UNLYN_DATA C
+                ON A.UNLYN_ID = C.UNLYN_ID
+            INNER JOIN GPCL_CM_CD_VAL D
+                ON C.UNLYN_DTL_CD = D.CD_VAL
+                AND D.GRP_CD_ID = 'UNLYN_DTL_CD'
+            INNER JOIN GPCL_CM_CD_VAL E
+                ON B.SUBSCRP_STA_CD = E.CD_VAL
+                AND E.GRP_CD_ID = 'SUBSCRP_STA_CD'
+            INNER JOIN GPCL_CM_CD_VAL F
+                ON B.APVL_STA_CD = F.CD_VAL
+                AND F.GRP_CD_ID = 'APVL_STA_CD'
+        )
+        SELECT
+            TKN_SEC_ID,
+            TKN_SEC_CD,
+            UNLYN_ID,
+            TKN_SEC_NM,
+            OFFR_CRRN_CD,
+            DATE_FORMAT(ISSUE_DD, '%Y-%m-%d') AS ISSUE_DD,
+            OFFR_QTY,
+            OFFR_AMT,
+            DATE_FORMAT(SUBSCRP_SD, '%Y-%m-%d') AS SUBSCRP_SD,
+            DATE_FORMAT(SUBSCRP_ED, '%Y-%m-%d') AS SUBSCRP_ED,
+            SUBSCRP_STA_CD,
+            APVL_STA_CD,
+            APVL_STA_NM,
+            UNLYN_KOR_NM,
+            UNLYN_DTL_NM,
+            SUBSCRP_STA_NM,
+            IFNULL(SUBSCRP_QTY, 0) AS SUBSCRP_QTY
+        FROM T_SUBSCR
+        WHERE 1=1
+        <if test="statusCode != null and statusCode != ''">
+            AND SUBSCRP_STA_CD = #{statusCode}
+        </if>
+        ORDER BY SUBSCRP_SD DESC
+    </select>
+</mapper>

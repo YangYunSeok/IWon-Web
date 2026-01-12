@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.webcom.MainMapper">
+    <!--
+        SQL definition for selecting menu definitions for a given user.
+        The query mirrors the recursive CTE provided by the customer and
+        includes joins to role and button authorization tables. We wrap the
+        SQL in a CDATA section to avoid any XML parsing issues.
+    -->
+    <select id="selectMenus" parameterType="map" resultType="map">
+        <![CDATA[
+        WITH RECURSIVE TREE_MENU1 AS (
+             SELECT 1 AS LEVEL
+                  , MENU_ID
+                  , MENU_NM
+                  , MENU_ORD
+                  , SYS_TP_CD
+                  , MENU_IMG_ID
+                  , UP_MENU_ID
+                  , BZ_UPCLSS_ID
+                  , PROGM_ID
+                  , SCREN_NO
+                  , SCREN_EXECUTE_TP_CD
+                  , OPEN_TP_CD
+                  , SCREN_PARM_CONTN
+                  , HELP_URL
+               FROM GPCL_MENU
+              WHERE USE_YN = 'Y'
+                AND TRIM(IFNULL(UP_MENU_ID,'')) <> ''
+                AND SYS_TP_CD = 'STO'
+                AND MENU_ID IN (SELECT T3.MENU_ID
+                                  FROM GPCL_USR            T1
+                                 INNER JOIN GPCL_USR_ROLE_MAPP  T2 ON T1.USR_ID  = T2.USR_ID
+                                 INNER JOIN GPCL_ROLE_MENU_AUTH T3 ON T2.ROLE_ID = T3.ROLE_ID
+                                 INNER JOIN GPCL_ROLE_BUTN_AUTH T4 ON T3.ROLE_ID = T4.ROLE_ID AND T3.MENU_ID = T4.MENU_ID
+                                 WHERE T1.USR_ID = #{USR_ID}
+                                 GROUP BY T3.MENU_ID)
+             UNION ALL
+            SELECT T12.LEVEL + 1
+                 , T11.MENU_ID
+                 , T11.MENU_NM
+                 , T11.MENU_ORD
+                 , T11.SYS_TP_CD
+                 , T11.MENU_IMG_ID
+                 , T11.UP_MENU_ID
+                 , T11.BZ_UPCLSS_ID
+                 , T11.PROGM_ID
+                 , T11.SCREN_NO
+                 , T11.SCREN_EXECUTE_TP_CD
+                 , T11.OPEN_TP_CD
+                 , T11.SCREN_PARM_CONTN
+                 , T11.HELP_URL
+              FROM TREE_MENU1 T12
+             INNER JOIN GPCL_MENU T11
+                ON T12.UP_MENU_ID = T11.MENU_ID
+               AND T11.USE_YN = 'Y'
+               AND TRIM(T11.UP_MENU_ID) <> ''
+               AND T11.SYS_TP_CD = 'STO'
+        ),
+        TREE_MENU AS (
+            SELECT LEVEL
+                 , MENU_ID
+                 , MENU_NM
+                 , MENU_ORD
+                 , SYS_TP_CD
+                 , MENU_IMG_ID
+                 , UP_MENU_ID
+                 , BZ_UPCLSS_ID
+                 , PROGM_ID
+                 , SCREN_NO
+                 , SCREN_EXECUTE_TP_CD
+                 , SCREN_PARM_CONTN
+                 , HELP_URL
+              FROM (
+                    SELECT ROW_NUMBER() OVER (PARTITION BY MENU_ID ORDER BY LEVEL DESC) AS NUM
+                         , LEVEL
+                         , MENU_ID
+                         , MENU_NM
+                         , MENU_ORD
+                         , SYS_TP_CD
+                         , MENU_IMG_ID
+                         , UP_MENU_ID
+                         , BZ_UPCLSS_ID
+                         , PROGM_ID
+                         , SCREN_NO
+                         , SCREN_EXECUTE_TP_CD
+                         , SCREN_PARM_CONTN
+                         , HELP_URL
+                      FROM TREE_MENU1
+                 ) T11
+             WHERE T11.NUM = 1
+        ),
+        AUTH_MENU AS (
+            SELECT T3.MENU_ID AS MENU_ID
+                 , GROUP_CONCAT(T4.BUTN_ID SEPARATOR '|') AS BUTN_ID
+              FROM GPCL_USR T1
+             INNER JOIN GPCL_USR_ROLE_MAPP  T2 ON T1.USR_ID  = T2.USR_ID
+             INNER JOIN GPCL_ROLE_MENU_AUTH T3 ON T2.ROLE_ID = T3.ROLE_ID
+             INNER JOIN GPCL_ROLE_BUTN_AUTH T4 ON T3.ROLE_ID = T4.ROLE_ID AND T3.MENU_ID = T4.MENU_ID
+             WHERE T1.USR_ID = #{USR_ID}
+             GROUP BY T3.MENU_ID
+        )
+        SELECT T4.MAX_LV - T1.LEVEL + 1                  AS LV
+             , T1.MENU_ID                                AS MENU_ID
+             , T1.MENU_NM                                AS MENU_NM
+             , T1.SYS_TP_CD                              AS SYS_TP_CD
+             , T1.MENU_IMG_ID                            AS MENU_IMG_ID
+             , T1.MENU_ORD                               AS MENU_ORD
+             , T1.UP_MENU_ID                             AS UP_MENU_ID
+             , T1.BZ_UPCLSS_ID                           AS BZ_UPCLSS_ID
+             , T1.PROGM_ID                               AS PROGM_ID
+             , T1.SCREN_NO                               AS SCREN_NO
+             , T1.SCREN_EXECUTE_TP_CD                    AS SCREN_EXECUTE_TP_CD
+             , T1.SCREN_PARM_CONTN                       AS SCREN_PARM_CONTN
+             , T1.HELP_URL                               AS HELP_URL
+             , T2.BUTN_ID                                AS BUTN_ID
+             , T3.OBJ_FILE_NM                            AS OBJ_FILE_NM
+             , T3.CLSS_NM                                AS CLSS_NM
+             , CONCAT('[', T1.SCREN_NO, ']', T1.MENU_NM) AS MENU_NM2
+          FROM TREE_MENU T1
+          LEFT OUTER JOIN AUTH_MENU T2 ON T1.MENU_ID = T2.MENU_ID
+          LEFT OUTER JOIN GPCL_PROGM   T3 ON T1.PROGM_ID = T3.PROGM_ID
+         INNER JOIN (
+                      SELECT BZ_UPCLSS_ID, MAX(LEVEL) AS MAX_LV FROM TREE_MENU GROUP BY BZ_UPCLSS_ID
+                    ) T4 ON T1.BZ_UPCLSS_ID = T4.BZ_UPCLSS_ID
+         ORDER BY T1.MENU_ORD, T1.BZ_UPCLSS_ID, T1.UP_MENU_ID
+        ]]>
+    </select>
+</mapper>

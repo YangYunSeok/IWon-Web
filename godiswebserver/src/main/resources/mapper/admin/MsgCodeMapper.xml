@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.admin.MsgCodeMapper">
+	<select id="getMessageCode" parameterType="map" resultType="map">
+        WITH ROOT AS (
+            SELECT A.MSG_ID
+                , '' AS MSG_ID_NUM
+                , A.MSG_CLSS_CD
+                , B.CD_VAL_NM        AS MSG_CLSS_NM
+                , B.CD_ADD_INFO_VAL1 AS MSG_INFO_VAL
+                , A.MSG_KOR_CONTN
+                , A.MSG_ENG_CONTN
+                , A.MSG_BUTN_CD
+                , C.CD_VAL_NM        AS MSG_BUTN_NM
+                , D.CD_VAL_NM        AS TR_MSG_TP_NM
+                , A.MSG_TP_CD
+                , A.REG_DDTM
+                , A.REG_ID
+                , A.LST_ADJ_DDTM 
+                , A.LST_ADJPRN_ID
+            FROM GPCL_MSG_CD    A
+            LEFT OUTER JOIN GPCL_CM_CD_VAL B ON 'MSG_CLSS_CD'  = B.GRP_CD_ID AND A.MSG_CLSS_CD = B.CD_VAL 
+            LEFT OUTER JOIN GPCL_CM_CD_VAL C ON 'MSG_BUTN_CD'  = C.GRP_CD_ID AND A.MSG_BUTN_CD = C.CD_VAL
+            LEFT OUTER JOIN GPCL_CM_CD_VAL D ON 'MSG_TP_CD' = D.GRP_CD_ID AND A.MSG_TP_CD = D.CD_VAL 
+            WHERE 1=1
+                <if test="MSG_CLSS_CD != null and MSG_CLSS_CD != ''">
+                    AND A.MSG_CLSS_CD  = #{MSG_CLSS_CD}
+                </if>
+                <if test="MSG_CLSS_CD == null or MSG_CLSS_CD == ''">
+                    AND A.MSG_CLSS_CD  = '01'
+                </if>
+            AND (
+                    UPPER(A.MSG_KOR_CONTN) LIKE Concat('%' , UPPER(#{MSG_CONTN}) , '%')
+                OR  UPPER(A.MSG_ENG_CONTN) LIKE Concat('%' , UPPER(#{MSG_CONTN}) , '%')
+                    )
+            ORDER BY MSG_ID
+        )
+        SELECT *
+        FROM ROOT
+	</select>
+	<select id="getPkCnt" parameterType="map" resultType="int">
+	<![CDATA[
+	SELECT COUNT(1)
+	  FROM GPCL_MSG_CD
+	 WHERE MSG_ID = #{MSG_ID}
+    ]]>
+	</select>
+	<insert id="addMessageCode" parameterType="map">
+        <![CDATA[
+        INSERT INTO GPCL_MSG_CD
+        (
+            MSG_ID
+            , MSG_CLSS_CD
+            , MSG_KOR_CONTN
+            , MSG_ENG_CONTN
+            , MSG_BUTN_CD
+            , MSG_TP_CD
+            , REG_DDTM
+            , REG_ID
+            , LST_ADJ_DDTM
+            , LST_ADJPRN_ID
+        )
+        VALUES
+        (
+            
+            (
+                    SELECT CASE WHEN LENGTH(#{MSG_ID}) > 3 THEN #{MSG_ID}
+                                ELSE #{MSG_ID} + LPAD(MAX(SUBSTRING(A.MSG_ID, 4 ,8)) +1, 5, '0')
+                            END
+                    FROM GPCL_MSG_CD A
+                WHERE MSG_ID NOT LIKE '%99999'
+            )
+            , #{MSG_CLSS_CD}
+            , #{MSG_KOR_CONTN}
+            , #{MSG_ENG_CONTN}
+            , #{MSG_BUTN_CD}
+            , #{MSG_TP_CD}
+            , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+            , #{REG_ID}
+            , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+            , #{LST_ADJPRN_ID}
+        )
+        ]]>
+	</insert>
+	
+	<update id="updateMessageCode" parameterType="map">
+        <![CDATA[
+        UPDATE GPCL_MSG_CD
+        SET MSG_CLSS_CD 		= #{MSG_CLSS_CD}
+            , MSG_KOR_CONTN 	= #{MSG_KOR_CONTN}
+            , MSG_ENG_CONTN 	= #{MSG_ENG_CONTN}
+            , MSG_BUTN_CD 		= #{MSG_BUTN_CD}
+            , MSG_TP_CD 		= #{MSG_TP_CD}
+            , LST_ADJ_DDTM 	= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+            , LST_ADJPRN_ID 	= #{LST_ADJPRN_ID}
+        WHERE MSG_ID = #{MSG_ID}
+        ]]>
+	</update>
+	
+	<delete id="removeMessageCode" parameterType="map">
+        <![CDATA[
+        DELETE FROM GPCL_MSG_CD
+        WHERE MSG_ID = #{MSG_ID}
+        ]]>
+	</delete>
+	
+</mapper>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godisweb.mapper.admin.RoleGrantMapper">
+
+    <!-- 사용자 그룹 조회 -->
+    <select id="getUserGroup" resultType="Map">
+    <![CDATA[
+        /*com.gpcl.admin.authority.roleGrant.mapper-rolegrant.getUserGroup*/
+        SELECT USR_GRP_ID
+             , UP_USR_GRP_ID
+             , USR_GRP_NM
+             , VALID_STRT_DD
+             , VALID_END_DD
+          FROM GPCL_USR_GRP
+    ]]>
+    </select>
+
+    <!-- 그룹별 사용자 조회 -->
+    <select id="getUser" parameterType="Map" resultType="Map">
+    <![CDATA[
+        /*com.gpcl.admin.authority.roleGrant.mapper-rolegrant.getUser*/
+        SELECT USR_ID
+             , USR_NM AS USR_NM 	     	
+             , USR_ENG_NM AS USR_ENG_NM
+             , USR_TP_CD
+             , SYS_TP_CD
+             , USR_GRP_ID
+             , JOBTITL_NM
+          FROM GPCL_USR
+         WHERE SYS_TP_CD = #{SYS_TP_CD}
+           AND USR_GRP_ID = #{USR_GRP_ID}
+    ]]>
+    </select>
+
+    <!-- 역할 정의 조회 -->
+    <select id="getRoleDefinition" parameterType="Map" resultType="Map">
+    <![CDATA[
+        /* com.godisweb.mapper.admin.UserAuthorityMapper.getRoleDefinition */
+        SELECT ROLE_ID
+             , ROLE_NM
+             , SYS_TP_CD
+             , ROLE_DSC
+             , 1 AS VISIBLE_YN
+          FROM GPCL_ROLE_DEFIN
+         WHERE SYS_TP_CD = #{SYS_TP_CD}
+         ORDER BY ROLE_ID
+    ]]>
+    </select>
+
+    <!-- 사용자 역할 매핑 조회 -->
+    <select id="getUserRoleMappingData" parameterType="String" resultType="Map">
+    <![CDATA[
+        /* com.godisweb.mapper.admin.UserAuthorityMapper.getUserRoleMappingData */
+        WITH T_ROLE AS
+        (
+            SELECT A.USR_ID
+                 , B.USR_NM AS USR_NM 
+                 , B.USR_ENG_NM AS USR_ENG_NM
+                 , A.ROLE_ID
+                 , C.ROLE_NM
+                 , C.ROLE_DSC
+                 , A.REG_DDTM
+                 , A.REG_ID
+                 , A.LST_ADJ_DDTM
+                 , A.LST_ADJPRN_ID
+                 , '1' AS VISIBLE_YN
+              FROM GPCL_USR_ROLE_MAPP A
+             INNER JOIN GPCL_USR B
+                ON A.USR_ID  = B.USR_ID
+             INNER JOIN GPCL_ROLE_DEFIN C
+                ON A.ROLE_ID = C.ROLE_ID
+             WHERE A.USR_ID  = #{USR_ID}
+        )
+        SELECT USR_ID
+             , USR_NM AS USR_NM 
+             , USR_ENG_NM
+             , ROLE_ID
+             , ROLE_NM
+             , ROLE_DSC
+             , REG_DDTM
+             , REG_ID
+             , LST_ADJ_DDTM
+             , LST_ADJPRN_ID
+             , VISIBLE_YN
+          FROM T_ROLE
+    ]]>
+    </select>
+
+    <!-- 사용자 역할 매핑 추가 -->
+	<insert id="addUserRoleMapping" parameterType="java.util.List">
+	<![CDATA[
+	    /*com.gpcl.admin.authority.roleGrant.mapper-rolegrant.addUserRoleMapping*/
+	    INSERT INTO GPCL_USR_ROLE_MAPP
+	    (
+	          USR_ID
+	        , ROLE_ID
+	        , REG_DDTM
+	        , REG_ID
+	        , LST_ADJ_DDTM
+	        , LST_ADJPRN_ID
+	    )
+	    VALUES
+	]]>
+	    <foreach collection="list" item="row" separator=",">
+	        (
+	              #{row.USR_ID}
+	            , #{row.ROLE_ID}
+	            , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+	            , #{row.REG_ID}
+	            , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+	            , #{row.LST_ADJPRN_ID}
+	        )
+	    </foreach>
+	</insert>
+
+	<!-- 사용자 역할 매핑 삭제 -->
+	<delete id="removeUserRoleMapping" parameterType="java.util.List">
+	<![CDATA[
+	    /*com.gpcl.admin.authority.roleGrant.mapper-rolegrant.removeUserRoleMapping*/
+	    DELETE FROM GPCL_USR_ROLE_MAPP
+	     WHERE USR_ID = #{list[0].USR_ID}
+	       AND ROLE_ID IN
+	]]>
+	    <foreach collection="list" item="row" open="(" close=")" separator=",">
+	        #{row.ROLE_ID}
+	    </foreach>
+	</delete>
+</mapper>

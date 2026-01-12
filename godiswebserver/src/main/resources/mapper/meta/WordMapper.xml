@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.meta.WordMapper">
+  
+  <!-- 단어 목록 조회 -->
+  <select id="getWordList" parameterType="map" resultType="map">
+    SELECT ROW_NUMBER() OVER (ORDER BY A.WORD_NO) AS ROW_NUM
+         , A.WORD_NO             /* 단어번호      */
+         , A.WORD_KOR_NM         /* 단어한글명     */
+         , A.WORD_ENG_NM         /* 단어영문명     */
+         , A.WORD_ENG_FULL_NM    /* 단어영문정식명  */
+         , A.WORD_SEC_CD         /* 단어구분코드   */
+         , A.WORD_TP_CD          /* 단어유형코드   */
+         , A.WORD_DTL_TP_CD      /* 단어소분류코드  */
+         , A.WORD_DEFIN_DSC      /* 단어정의설명   */
+         , A.WORD_APVL_CD        /* 단어승인코드   */
+         , (SELECT NVL(B.DOMAIN_KOR_NM, A.DOMAIN_NO) FROM GPCL_META_DOMAIN B WHERE B.DOMAIN_NO = A.DOMAIN_NO) AS DOMAIN_NO /* 도메인명    */
+         , A.APVL_STAT_CD        /* 승인상태코드   */
+         , A.REG_ID              /* 등록자ID       */
+         , DATE_FORMAT(STR_TO_DATE(A.REG_DDTM, '%Y%m%d%H%i%s'), '%Y-%m-%d %H:%i:%s') AS REG_DDTM
+                               /* 등록일시       */
+         , A.LST_ADJPRN_ID       /* 최종수정자ID   */
+         , DATE_FORMAT(STR_TO_DATE(A.LST_ADJ_DDTM, '%Y%m%d%H%i%s'), '%Y-%m-%d %H:%i:%s') AS LST_ADJ_DDTM
+                               /* 최종수정일시   */
+      FROM GPCL_STD_WORD  A     /* 표준단어   */
+     WHERE 1=1
+     <if test="WORD_KOR_NM != null and WORD_KOR_NM != ''">
+       AND A.WORD_KOR_NM      LIKE CONCAT('%' , #{WORD_KOR_NM} , '%')
+     </if>
+     <if test="WORD_SEC_CD != null and WORD_SEC_CD != ''">
+       AND A.WORD_SEC_CD       = #{WORD_SEC_CD}
+     </if>
+     <if test="WORD_ENG_FULL_NM != null and WORD_ENG_FULL_NM != ''">
+       AND A.WORD_ENG_FULL_NM LIKE CONCAT('%' , #{WORD_ENG_FULL_NM} , '%')
+     </if>
+     <if test="WORD_ENG_NM != null and WORD_ENG_NM != ''">
+       AND A.WORD_ENG_NM      LIKE CONCAT('%' , #{WORD_ENG_NM} , '%')
+     </if>
+     <if test="FROM_DATE != null and FROM_DATE != '' and TO_DATE != null and TO_DATE != ''">
+       AND A.LST_ADJ_DDTM     BETWEEN CONCAT(#{FROM_DATE} , '000000')
+                                  AND CONCAT(#{TO_DATE}   , '999999')
+     </if>
+  </select>
+
+  <!-- 단어영문명 중복검사 -->
+  <select id="checkWordEngNmDuplicate" parameterType="map" resultType="int">
+    SELECT COUNT(*)
+      FROM GPCL_STD_WORD
+     WHERE TRIM(UPPER(WORD_ENG_NM)) = TRIM(UPPER(#{WORD_ENG_NM}))
+  </select>
+
+  <!-- 단어 사용 여부 확인 (용어에서 사용 중인지) -->
+  <select id="checkWordUsedInTerm" parameterType="map" resultType="map">
+    SELECT A.TERM_NO
+         , B.TERM_KOR_NM
+      FROM GPCL_TERM_WORD_MAPP A
+      JOIN GPCL_STD_TERM B ON A.TERM_NO = B.TERM_NO
+     WHERE A.WORD_NO = #{WORD_NO}
+     LIMIT 5  /* 최대 5개까지만 조회 */
+  </select>
+
+  <!-- 단어 신규 등록 -->
+  <insert id="insertWord" parameterType="map">
+    INSERT INTO GPCL_STD_WORD (
+        WORD_NO              /* 단어번호 */
+      , WORD_KOR_NM          /* 단어한글명 */
+      , WORD_ENG_NM          /* 단어영문명 */
+      , WORD_ENG_FULL_NM     /* 단어영문정식명 */
+      , WORD_SEC_CD          /* 단어구분코드 */
+      , WORD_TP_CD           /* 단어유형코드 */
+      , WORD_DTL_TP_CD       /* 단어소분류코드 */
+      , WORD_DEFIN_DSC       /* 단어정의설명 */
+      , REG_ID               /* 등록자ID */
+      , REG_DDTM             /* 등록일시 */
+      , LST_ADJPRN_ID        /* 최종수정자ID */
+      , LST_ADJ_DDTM         /* 최종수정일시 */
+    ) VALUES (
+        (SELECT IFNULL(MAX(WORD_NO), 0) + 1 FROM GPCL_STD_WORD A)
+      , #{WORD_KOR_NM}
+      , #{WORD_ENG_NM}
+      , #{WORD_ENG_FULL_NM}
+      , #{WORD_SEC_CD}
+      , #{WORD_TP_CD}
+      , #{WORD_DTL_TP_CD}
+      , #{WORD_DEFIN_DSC}
+      , 'SYSTEM'
+      , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+      , 'SYSTEM'
+      , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+    )
+  </insert>
+
+  <!-- 단어 수정 -->
+  <update id="updateWord" parameterType="map">
+    UPDATE GPCL_STD_WORD
+       SET WORD_KOR_NM       = #{WORD_KOR_NM}
+         , WORD_ENG_NM       = #{WORD_ENG_NM}
+         , WORD_ENG_FULL_NM  = #{WORD_ENG_FULL_NM}
+         , WORD_SEC_CD       = #{WORD_SEC_CD}
+         , WORD_TP_CD        = #{WORD_TP_CD}
+         , WORD_DTL_TP_CD    = #{WORD_DTL_TP_CD}
+         , WORD_DEFIN_DSC    = #{WORD_DEFIN_DSC}
+         , LST_ADJPRN_ID     = 'SYSTEM'
+         , LST_ADJ_DDTM      = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+     WHERE WORD_NO = #{WORD_NO}
+  </update>
+
+  <!-- 단어 삭제 -->
+  <delete id="deleteWord" parameterType="map">
+    DELETE FROM GPCL_STD_WORD
+     WHERE WORD_NO = #{WORD_NO}
+  </delete>
+
+</mapper>

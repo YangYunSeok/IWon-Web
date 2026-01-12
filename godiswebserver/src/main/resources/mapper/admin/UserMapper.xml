@@ -1,0 +1,267 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.admin.UserMapper">
+	<select id="selectUserGroups" parameterType="map" resultType="map">
+	<![CDATA[
+	SELECT USR_GRP_ID
+	     , UP_USR_GRP_ID
+	     , USR_GRP_NM
+	     , VALID_STRT_DD
+	     , VALID_END_DD
+	  FROM GPCL_USR_GRP 
+	]]>
+  </select>
+
+	<select id="selectUser" parameterType="map" resultType="map">
+	<![CDATA[
+	SELECT /*+ USE_NL(A B) */
+	    A.USR_ID
+	  , A.USR_NM AS USR_NM
+	  , A.USR_GRP_ID
+	  , A.JOBTITL_NM 
+	  , A.TEL_NO 
+      , A.ENCRYP_CELLPHONE_NO AS CELLPHONE_NO 
+	  , A.ENCRYP_EMAIL   AS EMAIL_ADDR    
+	  , A.FAX_NO 
+	  , B.USR_STAT_CD
+	  , B.PW_ERR_CNT
+	  , B.VALID_STRT_DD
+	  , B.VALID_END_DD
+	  , C.USR_GRP_NM
+	FROM GPCL_USR       A
+		INNER JOIN GPCL_USR_LOGIN B ON A.USR_ID  = B.USR_ID
+		INNER JOIN GPCL_USR_GRP   C ON A.USR_GRP_ID = C.USR_GRP_ID
+	WHERE A.USR_GRP_ID = #{USR_GRP_ID}
+	    ORDER BY A.USR_ID
+   ]]>
+  </select>
+
+	<insert id="insertUserInfo" parameterType="map">
+	<![CDATA[
+	INSERT INTO GPCL_USR
+	(
+		  USR_ID
+		, USR_NM
+		, USR_TP_CD
+		, SYS_TP_CD
+		, USR_GRP_ID
+		, TEL_NO
+		, FAX_NO
+		, JOBTITL_NM
+		, ENCRYP_CELLPHONE_NO  
+		, ENCRYP_EMAIL      
+		, BAS_ACNT_YN
+		, REG_DDTM
+		, REG_ID
+		, LST_ADJ_DDTM
+		, LST_ADJPRN_ID
+	)
+	VALUES
+	(
+		  #{USR_ID} 
+		, #{USR_NM}
+		, NULL
+		, #{SYS_TP_CD}
+		, #{USR_GRP_ID}
+		, #{TEL_NO}
+		, #{FAX_NO}
+		, #{JOBTITL_NM}
+	    , #{CELLPHONE_NO} 
+		, #{EMAIL_ADDR}   
+		, 'N'
+		, CONCAT(DATE_FORMAT(NOW(), '%Y%m%s'), TIME_FORMAT(NOW(), '%H%i%s'))
+		, #{REG_ID}
+		, CONCAT(DATE_FORMAT(NOW(), '%Y%m%s'), TIME_FORMAT(NOW(), '%H%i%s'))
+		, #{LST_ADJPRN_ID}
+	)
+	]]>
+  </insert>
+
+	<insert id="insertUserLogin" parameterType="map">
+	<![CDATA[
+	INSERT INTO GPCL_USR_LOGIN
+	(
+		  USR_ID
+		, ENCRYP_PW
+		, PW_ERR_CNT
+		, SCND_FACTR_ERR_CNT
+		, LST_LOGIN_DDTM
+		, PW_CHG_DD
+		, USR_STAT_CD
+		, PRSNT_LOGIN_YN
+		, VALID_STRT_DD
+		, VALID_END_DD
+		, REG_DDTM
+		, REG_ID
+		, LST_ADJ_DDTM
+		, LST_ADJPRN_ID
+	)
+	VALUES
+	(
+		  UPPER(#{USR_ID}) 
+		, NULL
+		, 0
+		, 0
+		, NULL
+		, NULL
+		, 'N'
+		, 'N'
+		, #{VALID_STRT_DD}
+		, #{VALID_END_DD}
+		, CONCAT(DATE_FORMAT(NOW(), '%Y%m%s'), TIME_FORMAT(NOW(), '%H%i%s'))
+		, #{REG_ID}
+		, CONCAT(DATE_FORMAT(NOW(), '%Y%m%s'), TIME_FORMAT(NOW(), '%H%i%s'))
+		, #{LST_ADJPRN_ID}
+	)
+	]]>
+  </insert>
+
+	<update id="updateUserInfo" parameterType="map">
+	<![CDATA[
+	UPDATE GPCL_USR
+	   SET
+	       USR_NM                = #{USR_NM}
+	     , USR_GRP_ID 		     = #{USR_GRP_ID}
+	     , TEL_NO 			     = #{TEL_NO}
+	     , FAX_NO 			     = #{FAX_NO}
+	     , JOBTITL_NM 		     = #{JOBTITL_NM}
+	     , ENCRYP_CELLPHONE_NO   = #{CELLPHONE_NO}    
+	     , ENCRYP_EMAIL            = #{EMAIL_ADDR}     
+	     , LST_ADJ_DDTM 	     = CONCAT(DATE_FORMAT(NOW(), '%Y%m%s'), TIME_FORMAT(NOW(), '%H%i%s'))
+	     , LST_ADJPRN_ID 	     = #{LST_ADJPRN_ID}
+	 WHERE 1=1                   
+	   AND USR_ID 		     = #{USR_ID}
+	]]>
+  </update>
+
+	<update id="updateUserLogin" parameterType="map">
+	<![CDATA[
+	UPDATE GPCL_USR_LOGIN
+	   SET USR_STAT_CD 	    	= #{USR_STAT_CD}
+	     , VALID_STRT_DD 		= #{VALID_STRT_DD}
+	     , VALID_END_DD 		= #{VALID_END_DD}
+	     , LST_ADJ_DDTM 		= CONCAT(DATE_FORMAT(NOW(), '%Y%m%s'), TIME_FORMAT(NOW(), '%H%i%s'))
+	     , LST_ADJPRN_ID 		= #{LST_ADJPRN_ID}
+	 WHERE 1=1
+	  AND USR_ID = #{USR_ID}
+	]]>
+  </update>
+
+	<update id="deleteUserInfo" parameterType="map">
+	<![CDATA[
+	DELETE FROM GPCL_USR
+	 WHERE USR_ID = #{USR_ID}
+	]]>
+  </update>
+	<update id="deleteUserLogin" parameterType="map">
+	<![CDATA[
+	DELETE FROM GPCL_USR_LOGIN
+	 WHERE USR_ID = #{USR_ID}
+	]]>
+  </update>
+
+	<insert id="insertGroupInfo" parameterType="map">
+		<selectKey resultType="String" keyProperty="USR_GRP_ID" order="BEFORE">
+			SELECT IFNULL((SELECT CONCAT('USRG', RIGHT(CONCAT('000000',
+			CAST(MAX(CAST(SUBSTRING(USR_GRP_ID, 5, 6) AS UNSIGNED)) + 1 AS
+			CHAR)), 6)) AS USR_GRP_ID FROM GPCL_USR_GRP), 'USRG000001') AS
+			USR_GRP_ID
+		</selectKey>
+	<![CDATA[
+	INSERT INTO GPCL_USR_GRP
+	(
+		  USR_GRP_ID
+		, UP_USR_GRP_ID
+		, USR_GRP_NM
+		, VALID_STRT_DD
+		, VALID_END_DD
+		, REG_DDTM
+		, REG_ID
+		, LST_ADJ_DDTM
+		, LST_ADJPRN_ID
+	)
+	VALUES
+	(
+		  #{USR_GRP_ID}
+		, #{UP_USR_GRP_ID}
+		, #{USR_GRP_NM}
+		, REPLACE(#{VALID_STRT_DD}, '-', '')
+		, REPLACE(#{VALID_END_DD}, '-' , '')
+		, CONCAT(DATE_FORMAT(NOW(), '%Y%m%s'), TIME_FORMAT(NOW(), '%H%i%s'))
+		, #{REG_ID}
+		, CONCAT(DATE_FORMAT(NOW(), '%Y%m%s'), TIME_FORMAT(NOW(), '%H%i%s'))
+		, #{LST_ADJPRN_ID}
+	)
+ 	]]>
+	</insert>
+
+	<update id="updateGroupInfo" parameterType="map">
+	<![CDATA[
+	UPDATE GPCL_USR_GRP
+	   SET UP_USR_GRP_ID 		= #{UP_USR_GRP_ID}
+	     , USR_GRP_NM 			= #{USR_GRP_NM}
+	     , VALID_STRT_DD 		= #{VALID_STRT_DD}
+	     , VALID_END_DD 		= #{VALID_END_DD}
+	     , LST_ADJ_DDTM 		= CONCAT(DATE_FORMAT(NOW(), '%Y%m%s'), TIME_FORMAT(NOW(), '%H%i%s'))
+	     , LST_ADJPRN_ID 		= #{LST_ADJPRN_ID}
+	 WHERE 1=1
+	   AND USR_GRP_ID 			= #{USR_GRP_ID}
+ 	]]>
+  </update>
+
+	<update id="deleteGroupinfo" parameterType="map">
+	<![CDATA[
+	DELETE FROM GPCL_USR_GRP
+	WHERE USR_GRP_ID = #{USR_GRP_ID}
+	]]>
+  </update>
+
+	<update id="updateUserPw" parameterType="map">
+	<![CDATA[
+		UPDATE GPCL_USR_LOGIN
+		SET ENCRYP_PW = '1'
+		, PW_ERR_CNT = 0
+		, SCND_FACTR_ERR_CNT = 0
+		, PW_CHG_DD = DATE_FORMAT(NOW(), '%Y%m%d')
+		, USR_STAT_CD = 'A'
+		, LST_ADJ_DDTM = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, LST_ADJPRN_ID = #{LST_ADJPRN_ID}
+		WHERE 1=1
+		AND USR_ID = #{USR_ID}
+    ]]>
+	</update>
+
+	<!-- ============================================ -->
+	<!-- 관리자 로그인용 쿼리 - 새로 추가 -->
+	<!-- ============================================ -->
+	
+	<select id="selectUserById" parameterType="String" resultType="map">
+	<![CDATA[
+	SELECT 
+	    A.USR_ID
+	  , A.USR_NM
+	  , A.USR_GRP_ID
+	  , A.JOBTITL_NM
+	  , B.USR_STAT_CD
+	  , B.VALID_STRT_DD
+	  , B.VALID_END_DD
+	  , C.USR_GRP_NM
+	FROM GPCL_USR A
+	INNER JOIN GPCL_USR_LOGIN B ON A.USR_ID = B.USR_ID
+	INNER JOIN GPCL_USR_GRP C ON A.USR_GRP_ID = C.USR_GRP_ID
+	WHERE A.USR_ID = #{userId}
+	]]>
+	</select>
+
+	<!-- ============================================ -->
+	<!-- 사용자 ID 중복 체크 -->
+	<!-- ============================================ -->
+	
+	<select id="countUserById" parameterType="String" resultType="int">
+	<![CDATA[
+	SELECT COUNT(*) 
+	FROM GPCL_USR
+	WHERE UPPER(USR_ID) = UPPER(#{userId})
+	]]>
+	</select>
+
+</mapper>

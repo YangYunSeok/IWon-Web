@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.admin.CodeMapper">
+  <select id="selectGroups" parameterType="map" resultType="map">
+    SELECT GRP_CD_ID
+         , GRP_NM
+         , GRP_CD_DSC
+         , GRP_TYPE_CD
+         , MEM_CREAT_OBJ_YN
+         , VALID_STRT_DD
+         , VALID_END_DD
+      FROM GPCL_CM_CD
+     WHERE 1=1
+     <if test="GRP_TYPE_CD != null and GRP_TYPE_CD != ''">
+       AND GRP_TYPE_CD = #{GRP_TYPE_CD}
+     </if>
+     <if test="GRP_NM != null and GRP_NM != ''">
+       AND GRP_NM LIKE CONCAT('%', #{GRP_NM}, '%')
+     </if>
+     ORDER BY GRP_CD_ID
+  </select>
+
+  <insert id="insertGroup" parameterType="map">
+    INSERT INTO GPCL_CM_CD
+    (
+        GRP_CD_ID
+      , GRP_NM
+      , GRP_CD_DSC
+      , GRP_TYPE_CD
+      , MEM_CREAT_OBJ_YN
+      , VALID_STRT_DD
+      , VALID_END_DD
+      , REG_DDTM
+      , REG_ID
+      , LST_ADJ_DDTM
+      , LST_ADJPRN_ID)
+    VALUES
+    (
+        #{GRP_CD_ID}
+      , #{GRP_NM}
+      , #{GRP_CD_DSC}
+      , #{GRP_TYPE_CD}
+      , #{MEM_CREAT_OBJ_YN}
+      , #{VALID_STRT_DD}
+      , #{VALID_END_DD}
+      , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+      , 'kicho'
+      , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+      , 'kicho'
+    )
+  </insert>
+
+  <update id="updateGroup" parameterType="map">
+    UPDATE GPCL_CM_CD
+       SET GRP_NM           = #{GRP_NM}
+         , GRP_CD_DSC       = #{GRP_CD_DSC}
+         , GRP_TYPE_CD      = #{GRP_TYPE_CD}
+         , MEM_CREAT_OBJ_YN = #{MEM_CREAT_OBJ_YN}
+         , VALID_STRT_DD    = #{VALID_STRT_DD}
+         , VALID_END_DD     = #{VALID_END_DD}
+         , LST_ADJ_DDTM     = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+         , LST_ADJPRN_ID    = 'kicho'
+     WHERE GRP_CD_ID = #{GRP_CD_ID}
+  </update>
+  
+  
+
+  <update id="deleteGroup" parameterType="map">
+    DELETE FROM GPCL_CM_CD
+     WHERE GRP_CD_ID = #{GRP_CD_ID}
+  </update>
+
+  <select id="selectCode" parameterType="map" resultType="map">
+    WITH T_CODE AS
+    (
+        SELECT T1.CD_VAL
+             , T1.GRP_CD_ID
+             , T1.CD_VAL_NM
+             , T1.CD_VAL_ENG_NM
+             , T1.CD_VAL_DSC
+             , T1.UP_CD_VAL
+             , T1.SORT_ORD
+             , T1.CD_ADD_INFO_VAL1
+             , T1.CD_ADD_INFO_VAL2
+             , T1.CD_ADD_INFO_VAL3
+             , T1.CD_ADD_INFO_NO1
+             , T1.CD_ADD_INFO_NO2
+             , T1.CD_ADD_INFO_NO3
+             , T1.USE_YN
+          FROM GPCL_CM_CD_VAL T1
+         WHERE T1.GRP_CD_ID = #{GRP_CD_ID}
+    )
+    SELECT CD_VAL
+         , GRP_CD_ID
+         , CD_VAL_NM
+         , CD_VAL_ENG_NM
+         , CD_VAL_DSC
+         , UP_CD_VAL
+         , SORT_ORD
+         , CD_ADD_INFO_VAL1
+         , CD_ADD_INFO_VAL2
+         , CD_ADD_INFO_VAL3
+         , CD_ADD_INFO_NO1
+         , CD_ADD_INFO_NO2
+         , CD_ADD_INFO_NO3
+         , USE_YN
+      FROM T_CODE
+     ORDER BY SORT_ORD
+  </select>
+
+  <insert id="insertCode" parameterType="map">
+    INSERT INTO GPCL_CM_CD_VAL
+    (
+        GRP_CD_ID
+      , CD_VAL 
+      , CD_VAL_NM
+      , CD_VAL_ENG_NM
+      , CD_VAL_DSC
+      , UP_CD_VAL
+      , SORT_ORD
+      , CD_ADD_INFO_VAL1
+      , CD_ADD_INFO_VAL2
+      , CD_ADD_INFO_VAL3
+      , CD_ADD_INFO_NO1
+      , CD_ADD_INFO_NO2
+      , CD_ADD_INFO_NO3
+      , USE_YN
+      , REG_DDTM
+      , REG_ID
+      , LST_ADJ_DDTM
+      , LST_ADJPRN_ID
+      )
+    VALUES
+    (
+        #{GRP_CD_ID}
+      , #{CD_VAL}  
+      , #{CD_VAL_NM}
+      , #{CD_VAL_ENG_NM}
+      , #{CD_VAL_DSC}
+      , #{UP_CD_VAL}
+      , #{SORT_ORD}
+      , #{CD_ADD_INFO_VAL1}
+      , #{CD_ADD_INFO_VAL2}
+      , #{CD_ADD_INFO_VAL3}
+      , #{CD_ADD_INFO_NO1}
+      , #{CD_ADD_INFO_NO2}
+      , #{CD_ADD_INFO_NO3}
+      , #{USE_YN}
+      , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+      , 'kicho'
+      , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+      , 'kicho'
+   )
+  </insert>
+
+  <update id="updateCode" parameterType="map">
+    UPDATE GPCL_CM_CD_VAL
+       SET CD_VAL_NM        = #{CD_VAL_NM}
+         , CD_VAL_ENG_NM    = #{CD_VAL_ENG_NM}
+         , CD_VAL_DSC       = #{CD_VAL_DSC}
+         , UP_CD_VAL        = #{UP_CD_VAL}
+         , SORT_ORD         = #{SORT_ORD}
+         , CD_ADD_INFO_VAL1 = #{CD_ADD_INFO_VAL1}
+         , CD_ADD_INFO_VAL2 = #{CD_ADD_INFO_VAL2}
+         , CD_ADD_INFO_VAL3 = #{CD_ADD_INFO_VAL3}
+         , CD_ADD_INFO_NO1  = #{CD_ADD_INFO_NO1}
+         , CD_ADD_INFO_NO2  = #{CD_ADD_INFO_NO2}
+         , CD_ADD_INFO_NO3  = #{CD_ADD_INFO_NO3}
+         , USE_YN           = #{USE_YN}
+         , LST_ADJ_DDTM     = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+         , LST_ADJPRN_ID    = 'kicho'
+     WHERE GRP_CD_ID = #{GRP_CD_ID}
+       AND CD_VAL    = #{CD_VAL}
+  </update>
+
+  <update id="deleteCode" parameterType="map">
+    DELETE FROM GPCL_CM_CD_VAL
+     WHERE GRP_CD_ID = #{GRP_CD_ID}
+       AND CD_VAL    = #{CD_VAL	}
+  </update>
+</mapper>

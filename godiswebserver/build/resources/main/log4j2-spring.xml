@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Log4j2 configuration for the menu-tree-backend application.
+
+  This configuration defines a single console appender and sets
+  logging levels for MyBatis components to DEBUG so that executed
+  SQL statements and parameters are visible in the console. The root
+  logger defaults to INFO level, but you can adjust this as
+  necessary for your environment. To see the SQL queries printed,
+  ensure that the org.apache.ibatis logger is set to DEBUG.
+-->
+<Configuration status="WARN">
+    <Appenders>
+        <!-- Console appender writes log messages to standard out. -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %c{1} - %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <!-- Enable debug logging for MyBatis so SQL statements are printed. -->
+        <Logger name="org.apache.ibatis" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.mybatis" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <!-- You can adjust the root logging level here. INFO is a sensible default. -->
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

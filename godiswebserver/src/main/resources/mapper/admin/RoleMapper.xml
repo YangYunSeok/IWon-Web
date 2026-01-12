@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.admin.RoleMapper">
+    <select id="selectRoles" parameterType="Map" resultType="Map">
+    <![CDATA[
+    /* com.godisweb.mapper.admin.RoleMapper.selectRoles */
+	SELECT A.ROLE_ID
+	     , A.ROLE_NM
+	     , A.ROLE_ENG_NM
+	     , A.SYS_TP_CD
+	     , B.CD_VAL_NM AS SYS_TP_NM
+	     , A.ROLE_DSC
+	     , A.ROLE_ENG_DSC
+	     , A.REG_DDTM
+	     , A.REG_ID
+	     , A.LST_ADJ_DDTM
+	     , A.LST_ADJPRN_ID
+	     , A.USR_TP_CD
+	  FROM GPCL_ROLE_DEFIN A
+     INNER JOIN GPCL_CM_CD_VAL B
+        ON A.SYS_TP_CD = B.CD_VAL
+	 WHERE A.SYS_TP_CD = #{SYS_TP_CD}
+	   AND B.GRP_CD_ID = 'SYS_TP_CD'
+	 ORDER BY A.SYS_TP_CD
+	        , A.ROLE_ID
+    ]]>
+    </select>
+    <select id="selectBtnList" parameterType="Map" resultType="Map">
+    <![CDATA[
+    /* com.godisweb.mapper.admin.RoleMapper.selectBtnList */
+	SELECT DISTINCT BUTN_ID
+	  FROM GPCL_BUTN
+    ]]>
+    </select>
+    <select id="selectMenuButnAuth" parameterType="Map" resultType="Map">
+    <![CDATA[
+    /* com.godisweb.mapper.admin.RoleMapper.selectMenuButnAuth */
+	SELECT A.MENU_ID
+		 , A.ROLE_ID
+		 , C.MENU_NM
+		 , C.SCREN_NO
+		 , C.PROGM_ID
+		 , D.BUTN_ID
+		 , D.BUTN_DSC
+	  FROM GPCL_ROLE_MENU_AUTH A
+	 INNER JOIN GPCL_ROLE_BUTN_AUTH B
+	 	ON A.ROLE_ID   = B.ROLE_ID
+	   AND A.MENU_ID   = B.MENU_ID
+	 INNER JOIN GPCL_MENU C
+	 	ON B.MENU_ID   = C.MENU_ID
+	 INNER JOIN GPCL_BUTN D
+	 	ON B.BUTN_ID   = D.BUTN_ID
+	 INNER JOIN GPCL_PROGM_BUTN_MAPP E
+	 	ON D.BUTN_ID   = E.BUTN_ID
+	   AND E.PROGM_ID  = C.PROGM_ID
+	 WHERE A.ROLE_ID   = #{ROLE_ID}
+	   AND C.SYS_TP_CD = #{SYS_TP_CD}
+    ]]>
+    </select>
+    <select id="selectMenuList" parameterType="Map" resultType="Map">
+    <![CDATA[
+    /* com.godisweb.mapper.admin.RoleMapper.selectMenuList */
+	WITH RECURSIVE MENU_TREE AS (
+    -- 1. 루트 노드 (UP_MENU_ID가 NULL이거나 존재하지 않는 값)
+    SELECT MENU_ID
+         , MENU_NM
+         , SCREN_NO
+         , PROGM_ID
+         , UP_MENU_ID
+         , SYS_TP_CD
+         , 1 AS LEVEL
+         , CAST(MENU_ID AS CHAR(1000)) AS PATH
+      FROM GPCL_MENU
+     WHERE USE_YN = 'Y'
+       AND SYS_TP_CD = #{SYS_TP_CD}
+       AND (UP_MENU_ID IS NULL OR UP_MENU_ID NOT IN (SELECT MENU_ID FROM GPCL_MENU))
+     UNION ALL
+     -- 2. 재귀적으로 자식 노드 연결
+     SELECT M.MENU_ID
+          , M.MENU_NM
+          , M.SCREN_NO
+          , M.PROGM_ID
+          , M.UP_MENU_ID
+          , M.SYS_TP_CD
+          , MT.LEVEL + 1
+          , CONCAT(MT.PATH, '>', M.MENU_ID)
+       FROM GPCL_MENU M
+      INNER JOIN MENU_TREE MT
+         ON M.UP_MENU_ID = MT.MENU_ID
+      WHERE M.USE_YN = 'Y'
+        AND M.SYS_TP_CD = 'STO'
+      )
+	  SELECT *
+		FROM MENU_TREE
+	   ORDER BY PATH;
+    ]]>
+    </select>
+    <select id="selectMenuList_bk" parameterType="Map" resultType="Map">
+    <![CDATA[
+    /* com.godisweb.mapper.admin.RoleMapper.selectMenuList_bk */
+	SELECT MENU_ID
+		 , MENU_NM
+		 , SCREN_NO
+		 , PROGM_ID
+		 , UP_MENU_ID
+		 , SYS_TP_CD
+	  FROM GPCL_MENU A
+	 WHERE USE_YN = 'Y'
+	   AND A.SYS_TP_CD = #{SYS_TP_CD}
+	 ORDER BY MENU_ORD, MENU_NM
+    ]]>
+    </select>
+    <select id="selectProgmButnMappList" parameterType="Map" resultType="Map">
+    <![CDATA[
+    /* com.godisweb.mapper.admin.RoleMapper.selectProgmButnMappList */
+	SELECT A.PROGM_ID
+		 , A.BUTN_ID
+	  FROM GPCL_PROGM_BUTN_MAPP A
+     INNER JOIN GPCL_PROGM B
+	    ON A.PROGM_ID  = B.PROGM_ID
+	 WHERE B.SYS_TP_CD = #{SYS_TP_CD}
+    ]]>
+    </select>
+    <select id="selectUsrRoleMapp" parameterType="Map" resultType="Map">
+    <![CDATA[
+    /* com.godisweb.mapper.admin.RoleMapper.selectUsrRoleMapp */
+	SELECT DISTINCT B.ROLE_ID
+      FROM GPCL_USR_ROLE_MAPP A
+	 INNER JOIN GPCL_ROLE_DEFIN B
+	    ON A.ROLE_ID = B.ROLE_ID
+	 INNER JOIN GPCL_USR C
+	    ON A.USR_ID = C.USR_ID
+     WHERE B.SYS_TP_CD = #{SYS_TP_CD}
+    ]]>
+    </select>
+
+    <select id="getRoleMenuButn" parameterType="java.util.LinkedHashMap" resultType="int">
+        /* com.godisweb.mapper.admin.RoleMapper.getRoleMenuButn */
+        SELECT COUNT(1)
+        FROM GPCL_ROLE_MENU_AUTH
+        WHERE ROLE_ID = #{ROLE_ID}
+          AND MENU_ID = #{MENU_ID}
+    </select>
+
+    <insert id="addRoleMenuButn" parameterType="java.util.LinkedHashMap">
+        /* com.godisweb.mapper.admin.RoleMapper.addRoleMenuButn */
+        INSERT INTO GPCL_ROLE_MENU_AUTH
+        (
+          ROLE_ID
+        , MENU_ID
+        , REG_DDTM
+        , REG_ID
+        , LST_ADJ_DDTM
+        , LST_ADJPRN_ID
+        )
+        VALUES
+            (
+              #{ROLE_ID}
+            , #{MENU_ID}
+            , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+            , #{REG_ID}
+            , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+            , #{LST_ADJPRN_ID}
+            )
+    </insert>
+
+    <insert id="insertRoleMenuBtn" parameterType="Map">
+        /* com.godisweb.mapper.admin.RoleMapper.insertRoleMenuBtn */
+        INSERT INTO GPCL_ROLE_BUTN_AUTH
+        (
+              ROLE_ID
+            , MENU_ID
+            , BUTN_ID
+            , REG_DDTM
+            , REG_ID
+            , LST_ADJ_DDTM
+            , LST_ADJPRN_ID
+        )
+        VALUES
+        (
+              #{ROLE_ID}
+            , #{MENU_ID}
+            , #{BUTN_ID}
+            , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+            , #{REG_ID}
+            , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+            , #{LST_ADJPRN_ID}
+        )
+    </insert>
+
+    <delete id="deleteRoleMenuBtn" parameterType="Map">
+        /* com.godisweb.mapper.admin.RoleMapper.deleteRoleMenuBtn */
+        DELETE FROM GPCL_ROLE_BUTN_AUTH
+         WHERE ROLE_ID = #{ROLE_ID}
+           AND MENU_ID = #{MENU_ID}
+           AND BUTN_ID = #{BUTN_ID}
+    </delete>
+
+    <insert id="insertRole" parameterType="java.util.LinkedHashMap">
+        <selectKey resultType="String" keyProperty="ROLE_ID" order="BEFORE">
+            SELECT CONCAT('GPCL',LPAD(MAX(CAST(SUBSTRING(ROLE_ID,8,20) AS DECIMAL)) +1, 8, '0')) AS ROLE_ID
+            FROM GPCL_ROLE_DEFIN
+        </selectKey>
+        /* com.godisweb.mapper.admin.RoleMapper.insertRole */
+        INSERT INTO GPCL_ROLE_DEFIN
+        (
+        ROLE_ID
+        , ROLE_NM
+        , ROLE_ENG_NM
+        , SYS_TP_CD
+        , ROLE_DSC
+        , ROLE_ENG_DSC
+        , MBR_TP_CD
+        , USR_TP_CD
+        , REG_DDTM
+        , REG_ID
+        , LST_ADJ_DDTM
+        , LST_ADJPRN_ID
+        )
+        VALUES
+        (
+
+        #{ROLE_ID}
+        , #{ROLE_NM}
+        , #{ROLE_ENG_NM}
+        , #{SYS_TP_CD}
+        , #{ROLE_DSC}
+        , #{ROLE_ENG_DSC}
+        , #{MBR_TP_CD}
+        , #{USR_TP_CD}
+        , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+        , #{REG_ID}
+        , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+        , #{LST_ADJPRN_ID}
+        )
+    </insert>
+
+    <update id="updateRole" parameterType="java.util.LinkedHashMap">
+        /* com.godisweb.mapper.admin.RoleMapper.updateRole */
+        UPDATE GPCL_ROLE_DEFIN
+        SET ROLE_DSC 	 = #{ROLE_DSC}
+          , ROLE_ENG_DSC  = #{ROLE_ENG_DSC}
+          , ROLE_NM  	 = #{ROLE_NM}
+          , ROLE_ENG_NM   = #{ROLE_ENG_NM}
+          , MBR_TP_CD  = #{MBR_TP_CD}
+          , USR_TP_CD  = #{USR_TP_CD}
+          , SYS_TP_CD  = #{SYS_TP_CD}
+          , LST_ADJ_DDTM  = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+          , LST_ADJPRN_ID = #{LST_ADJPRN_ID}
+        WHERE 1=1
+          AND ROLE_ID = #{ROLE_ID}
+    </update>
+
+    <delete id="removeRoleAllBtnAuth" parameterType="java.util.LinkedHashMap">
+        /* com.godisweb.mapper.admin.RoleMapper.removeRoleAllBtnAuth */
+        DELETE
+        FROM GPCL_ROLE_BUTN_AUTH
+        WHERE ROLE_ID = #{ROLE_ID}
+    </delete>
+
+    <delete id="removeRoleMenuAuth" parameterType="java.util.LinkedHashMap">
+        /* com.godisweb.mapper.admin.RoleMapper.removeRoleMenuAuth */
+        DELETE
+        FROM GPCL_ROLE_MENU_AUTH
+        WHERE ROLE_ID = #{ROLE_ID}
+    </delete>
+
+    <delete id="removeRoleDefin" parameterType="java.util.LinkedHashMap">
+        /* com.godisweb.mapper.admin.RoleMapper.removeRoleDefin */
+        DELETE
+        FROM GPCL_ROLE_DEFIN
+        WHERE ROLE_ID = #{ROLE_ID}
+    </delete>
+
+</mapper>

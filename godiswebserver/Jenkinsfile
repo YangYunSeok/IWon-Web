@@ -1,0 +1,111 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = "GodisWebServer"
+        DEPLOY_DIR = "/opt/app"
+        DEPLOY_JAR = "${DEPLOY_DIR}/${APP_NAME}.jar"
+        SERVICE_NAME = "godisServer"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo "Gitea 레포에서 최신 코드 체크아웃"
+                deleteDir()
+                checkout scm
+
+                script {
+                    env.GIT_COMMIT_MESSAGE = sh(
+                        script: "git log -1 --pretty=%B",
+                        returnStdout: true
+                    ).trim()
+                }
+            }
+        }
+
+        stage('Build JAR') {
+            steps {
+                echo "Spring Boot JAR 빌드"
+                sh "sed -i 's/\\r\$//' gradlew"
+                sh "chmod +x gradlew"
+                sh "./gradlew clean build -x test"
+            }
+        }
+
+        stage('Find JAR') {
+            steps {
+                script {
+                    env.JAR_SOURCE = sh (
+                        script: "ls build/libs/*.jar | grep -v plain | head -n  1",
+                        returnStdout: true
+                        ).trim()
+
+                        echo "빌드된 JAR: ${env.JAR_SOURCE}"
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "JAR 파일 배포"
+
+                sh """
+                    sudo rm -f ${DEPLOY_JAR} || true
+                    sudo cp ${env.JAR_SOURCE} ${DEPLOY_JAR}
+                """
+            }
+        }
+
+        stage('Restart Service') {
+            steps {
+                echo "Systemd 서비스 재시작"
+
+                sh """
+                    sudo systemctl daemon-reload
+                    sudo systemctl restart ${SERVICE_NAME}
+                """
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                echo "🩺 서비스 상태 확인"
+
+                sh """
+                    if sudo systemctl is-active ${SERVICE_NAME} >/dev/null 2>&1; then
+                        echo "${SERVICE_NAME} 서비스 정상 실행 중"
+                    else
+                        echo "${SERVICE_NAME} 실행 실패"
+                        sudo systemctl status ${SERVICE_NAME} -l
+                        exit 1
+                    fi
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend (
+                message: """
+*서버 빌드 성공 🎉*
+Job: ${env.JOB_NAME} [${env.BUILD_NUMBER}]
+URL: ${env.BUILD_URL}
+커밋 메시지: ${env.GIT_COMMIT_MESSAGE}
+"""
+            )
+        }
+        failure {
+            slackSend (
+                message: """
+*서버 빌드 실패 ❌*
+Job: ${env.JOB_NAME} [${env.BUILD_NUMBER}]
+URL: ${env.BUILD_URL}
+커밋 메시지: ${env.GIT_COMMIT_MESSAGE}
+"""
+            )
+        }
+    }
+}

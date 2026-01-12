@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.webcom.AuthMapper">
+    <select id="findByUsrId" parameterType="string" resultType="map">
+    SELECT GUL.USR_ID    AS USR_ID
+    	 , ENCRYP_PW     AS ENCRYP_PW
+    	 , USR_NM        AS USR_NM
+    	 , GU.USR_GRP_ID AS USR_GRP_ID
+    	 , USR_GRP_NM    AS USR_GRP_NM
+	  FROM GPCL_USR_LOGIN GUL
+	  INNER JOIN GPCL_USR GU
+	     ON GUL.USR_ID = GU.USR_ID
+	  INNER JOIN GPCL_USR_GRP GUG
+	     ON GU.USR_GRP_ID = GUG.USR_GRP_ID
+	  WHERE GUL.USR_ID = #{username}
+    </select>
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.iwon.CoinMapper">
+
+    <select id="selectEmpList" parameterType="map" resultType="map">
+        SELECT EMP_NO
+             , EMP_NM
+             , DEPT_NM
+             , WALLET_ADDR
+             , COIN_BAL
+          FROM IWN_EMP_WALLET
+         WHERE USE_YN = 'Y'
+         <if test="empNm != null and empNm != ''">
+           AND EMP_NM LIKE CONCAT('%', #{empNm}, '%')
+         </if>
+         <if test="deptNm != null and deptNm != ''">
+           AND DEPT_NM LIKE CONCAT('%', #{deptNm}, '%')
+         </if>
+         ORDER BY EMP_NO
+    </select>
+
+    <select id="selectEmpWallet" parameterType="string" resultType="map">
+        SELECT EMP_NO
+        	 , WALLET_ADDR
+        	 , COIN_BAL
+          FROM IWN_EMP_WALLET
+         WHERE EMP_NO = #{empNo}
+    </select>
+
+    <insert id="insertTxHist" parameterType="map">
+        INSERT INTO IWN_TX_HIST
+        (
+              SND_WALLET_ADDR
+            , RCV_WALLET_ADDR
+            , RCV_EMP_NO
+            , TX_AMT
+            , TX_REASON_CD
+            , TX_HASH
+            , TX_STAT_CD
+            , REG_DDTM
+            , REG_ID
+        )
+        VALUES
+        (
+              #{sndWalletAddr}
+            , #{rcvWalletAddr}
+            , #{rcvEmpNo}
+            , #{amount}
+            , #{reasonCd}
+            , #{txHash}
+            , #{txStatCd}
+            , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+            , 'admin'
+        )
+    </insert>
+
+    <update id="updateEmpBalance" parameterType="map">
+        UPDATE IWN_EMP_WALLET
+           SET COIN_BAL = COIN_BAL + #{amount}
+             , LST_ADJ_DDTM = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+             , LST_ADJPRN_ID = 'admin'
+         WHERE EMP_NO = #{rcvEmpNo}
+    </update>
+    
+    <update id="updateWalletBalance" parameterType="map">
+        UPDATE IWN_EMP_WALLET
+           SET COIN_BAL = #{balance}
+             , LST_ADJ_DDTM = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+             , LST_ADJPRN_ID = 'admin'
+         WHERE WALLET_ADDR = #{walletAddr}
+    </update>
+
+</mapper>

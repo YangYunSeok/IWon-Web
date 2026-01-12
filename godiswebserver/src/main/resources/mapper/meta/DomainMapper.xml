@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.meta.DomainMapper">
+  <select id="getDomainList" parameterType="map" resultType="map">
+    select
+          ROW_NUMBER() OVER (ORDER BY A.DOMAIN_NO) AS ROW_NUM
+        , DOMAIN_NO				/*도메인번호*/
+        , DOMAIN_KOR_NM				/*도메인한글명*/
+        , DOMAIN_ENG_NM				/*도메인영문명*/
+        , SYS_CD				/*시스템코드*/
+        , UP_DOMAIN_NO				/*상위도메인번호*/
+        , WORD_TP_CD				/*단어유형코드 - 유형*/
+        , WORD_DTL_TP_CD				/*단어소분류코드 - 소분류*/
+        , BIZ_SEC_CD				/*업무구분코드*/
+        , REF_TBL_ID				/*참조테이블ID*/
+        , PSNL_INF_TGT_YN				/*개인정보대상여부*/
+        , CVRT_RULE_CD				/*변환규칙코드*/
+        , SCRTY_PLCY_CD				/*보안정책코드*/
+        , MASK_TGT_YN				/*마스킹대상여부*/
+        , CD_SYS_DSC				/*코드체계설명*/
+        , GRANT_ORG_NM				/*부여기관명*/
+        , DOMAIN_DEFN_DSC				/*도메인정의*/
+        , DOMAIN_NOTE				/*도메인비고*/
+        , DATA_TYPE_CD				/*데이터타입코드*/
+        , DATA_LEN				/*데이터길이*/
+        , DATA_SCALE				/*데이터크기*/
+        , DOMAIN__APLY_RSN				/*도메인신청사유*/
+        , AVLVAL_TP_CD				/*유효값유형*/
+        , APVL_STAT_CD				/*승인상태코드*/
+        , REG_ID				/*등록자ID*/
+        , DATE_FORMAT(STR_TO_DATE(A.REG_DDTM, '%Y%m%d%H%i%s'), '%Y-%m-%d %H:%i:%s') AS REG_DDTM /* 등록일시 */
+         , A.LST_ADJPRN_ID       /* 최종수정자ID   */
+         , DATE_FORMAT(STR_TO_DATE(A.LST_ADJ_DDTM, '%Y%m%d%H%i%s'), '%Y-%m-%d %H:%i:%s') AS LST_ADJ_DDTM /* 최종수정일시  */
+                               
+    from GPCL_META_DOMAIN A
+    where 1=1
+        <if test="DOMAIN_NM != null and DOMAIN_NM != ''">
+        AND (A.DOMAIN_KOR_NM      LIKE CONCAT('%' , #{DOMAIN_NM} , '%') OR
+                A.DOMAIN_ENG_NM      LIKE CONCAT('%' , #{DOMAIN_NM} , '%'))
+        </if>
+        <if test="SYS_CD != null and SYS_CD != ''">
+        AND A.SYS_CD = #{SYS_CD}
+        </if>
+        <if test="WORD_TP_CD != null and WORD_TP_CD != ''">
+        AND A.WORD_TP_CD = #{WORD_TP_CD}
+        </if>
+        <if test="WORD_DTL_TP_CD != null and WORD_DTL_TP_CD != ''">
+        AND A.WORD_DTL_TP_CD = #{WORD_DTL_TP_CD}
+        </if>
+	     <if test="FROM_DATE != null and FROM_DATE != '' and TO_DATE != null and TO_DATE != ''">
+	       AND A.LST_ADJ_DDTM BETWEEN CONCAT(#{FROM_DATE}, '000000') AND CONCAT(#{TO_DATE}, '999999')
+	     </if>
+  </select>
+  
+    <!-- 도메인영문명 중복검사 -->
+  <select id="checkDomainEngNmDuplicate" parameterType="map" resultType="int">
+    SELECT COUNT(*)
+      FROM GPCL_META_DOMAIN
+     WHERE TRIM(UPPER(DOMAIN_KOR_NM)) = TRIM(UPPER(#{DOMAIN_KOR_NM}))
+  </select>
+
+  <!-- 데이터 삽입 -->
+  <insert id="insertDomain" parameterType="map">
+    INSERT INTO GPCL_META_DOMAIN (
+      DOMAIN_NO
+      , WORD_TP_CD       			/*유형*/
+      , WORD_DTL_TP_CD       	/*소분류*/
+      , DATA_TYPE_CD       		/*데이터타입*/
+      , DATA_LEN       				/*길이*/
+      , DATA_SCALE       			/*소수점*/
+      , DOMAIN_KOR_NM       	/*도메인명*/
+      , DOMAIN_ENG_NM       	/*도메인영문명*/
+      , SYS_CD
+      , DOMAIN_DEFN_DSC				/*도메인정의*/
+      , DOMAIN_NOTE						/*도메인비고*/
+      , DOMAIN__APLY_RSN			/*도메인신청사유*/
+      , REG_ID               /* 등록자ID */
+      , REG_DDTM             /* 등록일시 */
+      , LST_ADJPRN_ID        /* 최종수정자ID */
+      , LST_ADJ_DDTM         /* 최종수정일시 */
+    ) VALUES (
+        (SELECT IFNULL(MAX(DOMAIN_NO), 0) + 1 FROM GPCL_META_DOMAIN A)
+      , #{WORD_TP_CD}
+      , #{WORD_DTL_TP_CD}
+      , #{DATA_TYPE_CD}
+      , nullif(#{DATA_LEN}, '')
+      , nullif(#{DATA_SCALE}, '')
+      , #{DOMAIN_KOR_NM}
+      , #{DOMAIN_ENG_NM}
+      , #{SYS_CD}
+      , #{DOMAIN_DEFN_DSC}
+      , #{DOMAIN_NOTE}
+      , #{DOMAIN__APLY_RSN}
+      , 'SYSTEM'
+      , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+      , 'SYSTEM'
+      , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+    )
+  </insert>
+
+  <!-- 도메인 수정 -->
+  <update id="updateDomain" parameterType="map">
+    UPDATE GPCL_META_DOMAIN
+       SET WORD_TP_CD = #{WORD_TP_CD}
+         , WORD_DTL_TP_CD = #{WORD_DTL_TP_CD}
+         , DATA_TYPE_CD = #{DATA_TYPE_CD}
+         , DATA_LEN = #{DATA_LEN}
+         , DATA_SCALE = #{DATA_SCALE}
+         , DOMAIN_KOR_NM = #{DOMAIN_KOR_NM}
+         , DOMAIN_ENG_NM = #{DOMAIN_ENG_NM}
+         , SYS_CD = #{SYS_CD}
+         , DOMAIN_DEFN_DSC = #{DOMAIN_DEFN_DSC}
+         , DOMAIN_NOTE = #{DOMAIN_NOTE}
+         , DOMAIN__APLY_RSN = #{DOMAIN__APLY_RSN}
+         , LST_ADJPRN_ID     = 'SYSTEM'
+         , LST_ADJ_DDTM      = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+     WHERE DOMAIN_NO = #{DOMAIN_NO}
+  </update>
+
+  <!-- 도메인 삭제 -->
+  <delete id="deleteDomain" parameterType="map">
+    DELETE FROM GPCL_META_DOMAIN
+     WHERE DOMAIN_NO = #{DOMAIN_NO}
+  </delete>
+</mapper>

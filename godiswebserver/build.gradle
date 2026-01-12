@@ -1,0 +1,72 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.6'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	/* Cache */
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+    
+    /* Security */
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    /* Gson */
+    implementation 'com.google.code.gson:gson:2.11.0'
+    
+    // Spring Session
+    implementation 'org.springframework.session:spring-session-core'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    //implementation 'org.springframework.session:spring-session-jdbc'
+    
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+    implementation 'org.springframework:spring-messaging'
+    implementation 'org.webjars:sockjs-client:1.5.1'
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+    implementation 'org.webjars:webjars-locator-core'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:3.3.2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    testCompileOnly 'org.projectlombok:lombok:1.18.32'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+    // Use Log4j2 for logging instead of the default Logback. The
+    // spring-boot-starter-log4j2 module pulls in the necessary
+    // log4j-core and log4j-api dependencies and automatically
+    // configures Spring Boot to use Log4j2. We also exclude the
+    // default logging starter to prevent both logging frameworks
+    // from being on the classpath at the same time.
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    
+    // 자바와 블록체인을 연결하는 핵심 라이브러리
+    implementation 'org.web3j:core:4.10.3'
+    implementation 'org  .web3j:contracts:4.10.3'
+    implementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// Exclude the default Spring Boot logging (Logback) so that Log4j2 is used
+configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

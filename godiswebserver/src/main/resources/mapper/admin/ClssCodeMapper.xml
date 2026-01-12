@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.admin.ClssCodeMapper">
+	<select id="getClssCodeGroup" parameterType="map" resultType="map" >
+	<![CDATA[
+    SELECT /*+ INDEX (GPCL_CLSS_GRP_CD GPCL_CLSS_GRP_CD_X1) */
+           CLSS_GRP_CD_ID
+	     , CLSS_GRP_CD_DSC
+	     , MEM_CREAT_OBJ_YN
+	     , VALID_STRT_DD
+	     , VALID_END_DD
+	  FROM GPCL_CLSS_GRP_CD
+	 WHERE VALID_STRT_DD <= DATE_FORMAT(NOW(), '%Y%m%d')
+       AND VALID_END_DD >= DATE_FORMAT(NOW(), '%Y%m%d')
+	   AND UPPER(IFNULL(CLSS_GRP_CD_DSC, ''))    LIKE CONCAT('%', UPPER(#{CLSS_GRP_CD_DSC}), '%')
+	ORDER BY CLSS_GRP_CD_ID
+	]]> 
+	</select>
+	
+	<insert id="addClssCodeGroup" parameterType="map">
+	<![CDATA[
+	INSERT INTO GPCL_CLSS_GRP_CD
+	(
+		  CLSS_GRP_CD_ID
+		, CLSS_GRP_CD_DSC
+		, MEM_CREAT_OBJ_YN
+		, VALID_STRT_DD
+		, VALID_END_DD
+		, REG_DDTM
+		, REG_ID
+		, LST_ADJ_DDTM
+		, LST_ADJPRN_ID
+	)
+	VALUES
+	(
+		  #{CLSS_GRP_CD_ID}
+		, #{CLSS_GRP_CD_DSC}
+		, #{MEM_CREAT_OBJ_YN}
+		, REPLACE(#{VALID_STRT_DD}, '-', '')
+		, REPLACE(#{VALID_END_DD}, '-', '')
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{REG_ID}
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{LST_ADJPRN_ID}
+	)
+	]]> 
+	</insert>
+	
+	<update id="updateClssCodeGroup" parameterType="map">
+	<![CDATA[
+	UPDATE GPCL_CLSS_GRP_CD
+	   SET CLSS_GRP_CD_DSC   = #{CLSS_GRP_CD_DSC}
+	     , VALID_STRT_DD     = REPLACE(#{VALID_STRT_DD}, '-', '')
+	     , VALID_END_DD      = REPLACE(#{VALID_END_DD}, '-', '')
+	     , LST_ADJ_DDTM      = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+	     , LST_ADJPRN_ID     = #{LST_ADJPRN_ID}
+	 WHERE 1=1
+	   AND CLSS_GRP_CD_ID    = #{CLSS_GRP_CD_ID}
+	]]> 
+	</update>
+	
+	<update id="removeClssCodeGroup" parameterType="map">
+	<![CDATA[
+	UPDATE GPCL_CLSS_GRP_CD
+	   SET VALID_END_DD 	= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 DAY), '%Y%m%d')
+	     , LST_ADJ_DDTM 	= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+	     , LST_ADJPRN_ID 	= #{LST_ADJPRN_ID}
+	 WHERE CLSS_GRP_CD_ID 	= #{CLSS_GRP_CD_ID}
+	]]> 
+	</update>
+	
+	<select id="getClssCode" parameterType="map" resultType="map">
+	<![CDATA[
+    SELECT T1.CLSS_GRP_CD_ID
+	     , T1.CLSS_CD_VAL
+	     , T1.UP_CLSS_CD_VAL
+	     , T1.GRP_CD_ID
+		 , T2.GRP_NM
+	     , T1.CD_VAL
+		 , T3.CD_VAL_NM
+      FROM GPCL_CLSS_CD_VAL T1
+      LEFT OUTER JOIN GPCL_CM_CD       T2  ON  T1.GRP_CD_ID = T2.GRP_CD_ID
+      LEFT OUTER JOIN GPCL_CM_CD_VAL   T3  ON  T1.GRP_CD_ID = T3.GRP_CD_ID  AND  T1.CD_VAL = T3.CD_VAL
+	 WHERE T1.CLSS_GRP_CD_ID = #{CLSS_GRP_CD_ID}
+	 ORDER BY T1.UP_CLSS_CD_VAL, T1.CLSS_CD_VAL                      
+	]]> 
+	</select>
+	
+	<insert id="addClssCode" parameterType="map">
+	<selectKey resultType="String" keyProperty="CLSS_CD_VAL" order="BEFORE">
+	SELECT CONCAT('CLSS',LPAD(IFNULL(MAX(SUBSTRING(CLSS_CD_VAL, 5, 15)), 0) +1, 7,'0'))
+      FROM GPCL_CLSS_CD_VAL
+	</selectKey>
+	<![CDATA[
+	INSERT INTO GPCL_CLSS_CD_VAL
+	(
+		  CLSS_CD_VAL
+		, CLSS_GRP_CD_ID
+		, UP_CLSS_CD_VAL
+		, GRP_CD_ID
+		, CD_VAL
+		, REG_DDTM
+		, REG_ID
+		, LST_ADJ_DDTM
+		, LST_ADJPRN_ID
+	)
+	VALUES
+	(
+		  #{CLSS_CD_VAL}
+		, #{CLSS_GRP_CD_ID}
+		, #{UP_CLSS_CD_VAL}
+		, #{GRP_CD_ID}
+		, #{CD_VAL}
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{REG_ID}
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{LST_ADJPRN_ID}
+	)
+	]]> 
+	</insert>
+	
+	<update id="updateClssCode" parameterType="map">
+	<![CDATA[
+	UPDATE GPCL_CLSS_CD_VAL
+	   SET UP_CLSS_CD_VAL  = #{UP_CLSS_CD_VAL}
+	     , GRP_CD_ID       = #{GRP_CD_ID}
+	     , CD_VAL          = #{CD_VAL}
+	     , LST_ADJ_DDTM    = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+	     , LST_ADJPRN_ID   = #{LST_ADJPRN_ID}
+	 WHERE 1=1
+	   AND CLSS_CD_VAL     = #{CLSS_CD_VAL}
+	]]> 
+	</update>
+	
+	<delete id="removeClssCode" parameterType="map">
+	/* SQL ID : code.clsscode.removeClssCode-Inline */
+	<![CDATA[
+	DELETE FROM GPCL_CLSS_CD_VAL
+	 WHERE CLSS_CD_VAL          = #{CLSS_CD_VAL}
+	]]> 
+	</delete>
+	
+</mapper>

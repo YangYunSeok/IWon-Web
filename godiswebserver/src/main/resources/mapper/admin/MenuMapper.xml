@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.admin.MenuMapper">
+    <select id="selectMenus" parameterType="map" resultType="map">
+    <![CDATA[
+    SELECT  M.MENU_ID
+          , '' AS MENU_ID_NUM
+          , M.MENU_NM
+          , M.MENU_ENG_NM
+          , M.SYS_TP_CD
+          , M.MENU_IMG_ID
+          , M.MENU_ORD
+          , M.UP_MENU_ID
+          , M.BZ_UPCLSS_ID
+          , M.PROGM_ID
+          , M.SCREN_NO
+          , M.SCREN_EXECUTE_TP_CD
+          , M.OPEN_TP_CD
+          , M.SCREN_PARM_CONTN
+          , M.HELP_URL
+          , M.USE_YN
+          , P.PROGM_NM
+       FROM GPCL_MENU  M
+       LEFT OUTER JOIN GPCL_PROGM P ON M.PROGM_ID = P.PROGM_ID
+      WHERE M.SYS_TP_CD = #{SYS_TP_CD}
+      ORDER BY BZ_UPCLSS_ID, UP_MENU_ID, MENU_ORD
+    ]]>
+    </select>
+
+    <insert id="insertMenu" parameterType="map" >
+    <![CDATA[
+    INSERT INTO GPCL_MENU
+    (
+        MENU_ID
+      , MENU_NM
+      , MENU_ENG_NM 
+      , SYS_TP_CD
+      , MENU_IMG_ID
+      , MENU_ORD
+      , UP_MENU_ID
+      , BZ_UPCLSS_ID
+      , PROGM_ID
+      , SCREN_NO
+      , SCREN_EXECUTE_TP_CD
+      , SCREN_PARM_CONTN
+      , HELP_URL
+      , USE_YN
+      , REG_DDTM
+      , REG_ID
+      , LST_ADJ_DDTM
+      , LST_ADJPRN_ID
+    )
+    VALUES
+    (
+        #{MENU_ID}  
+      , #{MENU_NM}
+      , #{MENU_ENG_NM}
+      , 'STO'
+      , #{MENU_IMG_ID}
+      , #{MENU_ORD}
+      , #{UP_MENU_ID}
+      , #{BZ_UPCLSS_ID}
+      , #{PROGM_ID}
+      , #{SCREN_NO}
+      , #{screnExecuteTpCd}
+      , #{SCREN_EXECUTE_TP_CD}
+      , #{SCREN_PARM_CONTN}
+      , #{HELP_URL}
+      , #{USE_YN}
+      , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+      , #{regId}
+      , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+      , #{lstAdjprnId}
+    )
+    ]]>
+    </insert>
+
+	<select id="selectMenuList" parameterType="map" resultType="map" >
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.selectMenuList*/
+    SELECT  M.MENU_ID
+          , '' AS MENU_ID_NUM
+          , M.MENU_NM
+          , M.MENU_ENG_NM
+          , M.SYS_TP_CD
+          , M.MENU_IMG_ID
+          , M.MENU_ORD
+          , M.UP_MENU_ID
+          , M.BZ_UPCLSS_ID
+          , M.PROGM_ID
+          , M.SCREN_NO
+          , M.SCREN_EXECUTE_TP_CD
+          , M.OPEN_TP_CD
+          , M.SCREN_PARM_CONTN
+          , M.HELP_URL
+          , M.USE_YN
+          , P.PROGM_NM
+       FROM GPCL_MENU  M
+       LEFT OUTER JOIN GPCL_PROGM P ON M.PROGM_ID = P.PROGM_ID
+      WHERE M.SYS_TP_CD = #{SYS_TP_CD}
+      ORDER BY BZ_UPCLSS_ID, UP_MENU_ID, MENU_ORD
+	]]>
+	</select>
+	
+	
+	<select id="selectProgramList" parameterType="map" resultType="map" >
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.selectProgramList*/
+    WITH T_PROGM AS (SELECT P.PROGM_ID
+                          , P.SYS_TP_CD
+                          , C.CD_VAL_NM AS TR_SYS_TP_NM
+                          , P.PROGM_NM
+                          , P.OBJ_FILE_NM
+                          , P.CLSS_NM
+                       FROM GPCL_PROGM     P
+                          , GPCL_CM_CD_VAL C
+                      WHERE P.SYS_TP_CD = #{SYS_TP_CD}
+                        AND C.GRP_CD_ID = 'SYS_TP_CD'
+                        AND P.SYS_TP_CD = CD_VAL)
+    SELECT PROGM_ID
+         , SYS_TP_CD
+         , TR_SYS_TP_NM
+         , PROGM_NM
+         , OBJ_FILE_NM
+         , CLSS_NM
+      FROM T_PROGM
+	]]>
+	</select>
+	
+	
+	<select id="selectProgramBtnAuth" parameterType="map" resultType="map" >
+	<![CDATA[
+	  SELECT P.PROGM_ID
+           , P.BUTN_ID
+           , B.BUTN_DSC
+           , BUTN_VRNT_CD
+           , BUTN_CLOR
+        FROM GPCL_PROGM_BUTN_MAPP P
+  INNER JOIN GPCL_BUTN            B   
+          ON P.BUTN_ID = B.BUTN_ID
+	]]>
+	</select>    
+
+	<select id="selectBtnInfo" parameterType="map" resultType="map" >
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.selectBtnAuth*/
+		SELECT BUTN_ID
+     		 , BUTN_DSC
+     		 , BUTN_VRNT_CD
+     		 , BUTN_CLOR 
+  		  FROM GPCL_BUTN 
+ 		 WHERE (UPPER(BUTN_ID) LIKE CONCAT('%', UPPER(#{BUTN_ID}), '%')
+ 		   OR  UPPER(BUTN_DSC) LIKE CONCAT('%', UPPER(#{BUTN_ID}), '%'))
+ 		 ORDER BY BUTN_ID
+	]]>
+	</select>
+
+	<insert id="insertMenuInfo" parameterType="map" >
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.addMenuInfo*/
+	INSERT INTO GPCL_MENU
+	(
+		  MENU_ID
+		, MENU_NM
+		, MENU_ENG_NM 
+		, SYS_TP_CD
+		, MENU_IMG_ID
+		, MENU_ORD
+		, UP_MENU_ID
+		, BZ_UPCLSS_ID
+		, PROGM_ID
+		, SCREN_NO
+		, SCREN_EXECUTE_TP_CD
+		, OPEN_TP_CD
+        , SCREN_PARM_CONTN
+        , HELP_URL
+        , USE_YN
+        , REG_DDTM
+        , REG_ID
+        , LST_ADJ_DDTM
+        , LST_ADJPRN_ID
+	)
+	VALUES
+	(
+		  #{MENU_ID}  
+		, #{MENU_NM}
+		, #{MENU_ENG_NM}
+		, #{SYS_TP_CD}
+		, #{MENU_IMG_ID}
+		, #{MENU_ORD}
+		, #{UP_MENU_ID}
+		, #{BZ_UPCLSS_ID}
+        , #{PROGM_ID}
+        , #{SCREN_NO}
+        , #{SCREN_EXECUTE_TP_CD}
+        , #{OPEN_TP_CD}
+        , #{SCREN_PARM_CONTN}
+        , #{HELP_URL}
+        , #{USE_YN}
+        , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{REG_ID}
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{LST_ADJPRN_ID}
+	)
+	]]>
+	</insert>
+	
+	
+	
+	<update id="updateMenuInfo" parameterType="map" >
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.updateMenuInfo*/
+	UPDATE GPCL_MENU
+	   SET MENU_NM          	= #{MENU_NM}
+	     , MENU_ENG_NM          = #{MENU_ENG_NM}
+	     , MENU_IMG_ID          = #{MENU_IMG_ID}
+	     , MENU_ORD         	= #{MENU_ORD}
+	     , UP_MENU_ID       	= #{UP_MENU_ID}
+	     , BZ_UPCLSS_ID     	= #{BZ_UPCLSS_ID}
+	     , PROGM_ID         	= #{PROGM_ID}
+	     , SCREN_NO         	= #{SCREN_NO}
+         , SCREN_EXECUTE_TP_CD  = #{SCREN_EXECUTE_TP_CD}
+         , OPEN_TP_CD			= #{OPEN_TP_CD}
+         , SCREN_PARM_CONTN 	= #{SCREN_PARM_CONTN}
+         , HELP_URL         	= #{HELP_URL}
+         , USE_YN           	= #{USE_YN}         
+         , LST_ADJ_DDTM     	= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+         , LST_ADJPRN_ID    	= #{LST_ADJPRN_ID}
+	 WHERE 1=1
+	   AND MENU_ID      = #{MENU_ID}
+       AND SYS_TP_CD = #{SYS_TP_CD}
+ 	]]>
+	</update>
+	
+	
+	<delete id="deleteMenuInfo" parameterType="map" >
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.deleteMenuInfo*/
+		DELETE FROM GPCL_MENU
+		WHERE MENU_ID      = #{MENU_ID}
+	  		AND SYS_TP_CD = #{SYS_TP_CD}
+ 	]]>
+	</delete>	
+
+	<insert id="insertProgramInfo" parameterType="map" >	
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.addProgramInfo*/
+	INSERT INTO GPCL_PROGM
+	(
+		  PROGM_ID
+		, PROGM_NM
+		, SYS_TP_CD
+		, OBJ_FILE_NM
+		, CLSS_NM
+        , REG_DDTM
+        , REG_ID
+        , LST_ADJ_DDTM
+        , LST_ADJPRN_ID
+	)
+	VALUES
+	(     
+		  #{PROGM_ID}
+		, #{PROGM_NM}
+		, #{SYS_TP_CD}
+		, #{OBJ_FILE_NM}
+		, #{CLSS_NM}
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{REG_ID}
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{LST_ADJPRN_ID}
+	)
+	]]>
+	</insert>
+	
+	
+	
+	<update id="updateProgramInfo" parameterType="map" >
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.updateProgramInfo*/
+	UPDATE GPCL_PROGM
+	   SET PROGM_ID         = #{PROGM_ID}
+	     , PROGM_NM         = #{PROGM_NM}
+	     , SYS_TP_CD        = #{SYS_TP_CD}
+	     , OBJ_FILE_NM      = #{OBJ_FILE_NM}
+	     , CLSS_NM          = #{CLSS_NM}
+         , LST_ADJ_DDTM     = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+         , LST_ADJPRN_ID    = #{LST_ADJPRN_ID}   
+	 WHERE 1=1
+	   AND PROGM_ID     = #{PROGM_ID}
+       AND SYS_TP_CD    = #{SYS_TP_CD}
+ 	]]>
+	</update>
+	
+	
+	<delete id="deleteProgramInfo" parameterType="map" >
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.removeProgramInfo*/
+   DELETE FROM GPCL_PROGM
+	WHERE PROGM_ID      = #{PROGM_ID}
+	  AND SYS_TP_CD     = #{SYS_TP_CD}
+ 	]]>
+	</delete>
+
+    <insert id="insertProgramBtnAuth" parameterType="map">
+    <![CDATA[
+    INSERT INTO GPCL_PROGM_BUTN_MAPP
+    (
+          PROGM_ID
+        , BUTN_ID
+        , REG_DDTM
+        , REG_ID
+        , LST_ADJ_DDTM
+        , LST_ADJPRN_ID
+    )
+    VALUES
+    (
+          #{PROGM_ID}
+        , #{BUTN_ID}
+        , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+        , #{REG_ID}
+        , DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+        , #{LST_ADJPRN_ID}
+    )
+    ]]>
+    </insert>
+
+    <delete id="deleteProgramBtnAuth" parameterType="map">
+    <![CDATA[
+    DELETE FROM GPCL_PROGM_BUTN_MAPP
+     WHERE PROGM_ID = #{PROGM_ID}
+       AND BUTN_ID  = #{BUTN_ID}
+     ]]>
+    </delete>
+
+	<insert id="insertBtnInfo" parameterType="map" >
+
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.addBtnInfo*/
+	  INSERT INTO GPCL_BUTN
+	(
+		  BUTN_ID
+		, BUTN_DSC
+		, BUTN_CLOR
+        , BUTN_VRNT_CD
+		, REG_DDTM
+		, REG_ID
+		, LST_ADJ_DDTM
+		, LST_ADJPRN_ID
+	)
+	VALUES
+	(
+		  #{BUTN_ID}
+		, #{BUTN_DSC}
+		, #{BUTN_CLOR}
+        , #{BUTN_VRNT_CD}
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{REG_ID}
+		, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		, #{LST_ADJPRN_ID}
+    )
+	]]>
+	</insert>
+
+	<update id="updateBtnInfo" parameterType="map" >
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.updateBtnInfo*/
+	UPDATE GPCL_BUTN
+	   SET BUTN_DSC         = #{BUTN_DSC}
+	     , BUTN_CLOR        =#{BUTN_CLOR}
+	     , BUTN_VRNT_CD     =#{BUTN_VRNT_CD}
+         , LST_ADJ_DDTM     = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+         , LST_ADJPRN_ID    = #{LST_ADJPRN_ID}
+	 WHERE 1=1
+	   AND BUTN_ID     = #{BUTN_ID}
+ 	]]>
+	</update>
+
+	<delete id="deleteBtn" parameterType="map" >
+	<![CDATA[
+	/*com.gpcl.admin.menu.menu.mapper-menu.removeBtn*/
+    DELETE FROM GPCL_BUTN
+	WHERE BUTN_ID      = #{BUTN_ID}
+ 	]]>
+	</delete>		
+
+	
+			
+</mapper>
