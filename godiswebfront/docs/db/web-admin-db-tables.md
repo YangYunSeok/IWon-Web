@@ -236,4 +236,4 @@ API ↔ 테이블 매핑(주요)
 - `DELETE /admin/monthly-payees/{id}` → `monthly_payees` 삭제 + `audit_logs`
 - `POST /admin/monthly-payees/bulk-delete` → `monthly_payees` 일괄 삭제 + `audit_logs`
 - `GET /admin/monthly-payees/export` → `monthly_payees` (조회 후 CSV/XLSX 생성)
-- `(TBD) GET /admin/transactions` → `wallet_transactions` (+ `wallets`, `employees`, `approvals`, `admin_transactions` 조인)
+- `GET /admin/transactions` → `wallet_transactions` (+ `wallets`, `employees`, `approvals`, `admin_transactions` 조인)

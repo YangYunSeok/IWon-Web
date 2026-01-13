@@ -335,11 +335,11 @@ responseType: ExportMonthlyPayeesResponse
 
 Note: 다운로드 응답 형식(스트림 vs URL vs base64)은 구현 단계에서 확정하며, 확정 시 `ExportMonthlyPayeesResponse`를 이에 맞게 갱신합니다.
 
-### 3.6. 거래 이력 조회 (TBD)
+### 3.6. 거래 이력 조회
 
-> UI 요구사항은 `docs/design/ui/admin/web-tx-history.md`에 있으며, API는 아직 확정 전입니다.
+> UI 요구사항: `docs/design/ui/admin/web-tx-history.md`
 
-- (제안) **Method/Path**: `GET /admin/transactions`
+- **Method/Path**: `GET /admin/transactions`
 
 ```@codegen
 id: webTxHistory.list
