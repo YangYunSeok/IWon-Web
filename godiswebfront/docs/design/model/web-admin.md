@@ -55,6 +55,56 @@
 | items | MonthlyPayee[] | 목록 |
 | total | number | 전체 건수 |
 
+### UpdateMonthlyPayeeRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| amount | IWC (optional) | 지급 금액 수정 |
+| reason | string (optional) | 지급 사유/메모 수정 |
+| status | MonthlyPayeeStatus (optional) | 상태 변경(scheduled/paid/cancelled) |
+
+### DeleteMonthlyPayeeRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| id | string | 삭제할 레코드 ID (path param과 동일) |
+
+### DeleteMonthlyPayeeResponse
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| deletedId | string | 삭제된 레코드 ID |
+
+### BulkDeleteMonthlyPayeesRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| ids | string[] | 삭제할 레코드 ID 목록 |
+
+### BulkDeleteMonthlyPayeesResponse
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| deletedCount | number | 삭제된 건수 |
+| deletedIds | string[] (optional) | 삭제된 ID 목록(필요 시) |
+
+### ExportMonthlyPayeesRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| year | number | 연도 |
+| month | number | 월 |
+| coinType | string (optional) | 코인 필터 |
+| format | 'csv' \| 'xlsx' (optional) | 내보내기 포맷 |
+
+### ExportMonthlyPayeesResponse
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| downloadUrl | string | 다운로드 URL(또는 스트림 방식이면 제거/대체) |
+| fileName | string (optional) | 파일명 |
+| expiresAt | ISODateString (optional) | URL 만료 시각 |
+
 ## 2. 임직원 / 지갑
 
 ### EmployeeWallet
@@ -105,6 +155,25 @@
 | 필드 | 타입 | 설명 |
 | --- | --- | --- |
 | items | ApprovalRequest[] | 승인 대기 목록 |
+
+### AdminTransactionListResponse
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| items | AdminTransaction[] | 거래 목록 |
+| nextCursor | string (optional) | 다음 페이지 커서 |
+
+### ListAdminTransactionsRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| from | ISODateString (optional) | 시작일시(필터) |
+| to | ISODateString (optional) | 종료일시(필터) |
+| type | TxType (optional) | 유형 필터 |
+| coinType | CoinUsageCategory (optional) | 코인 용도 필터 |
+| query | string (optional) | 통합 검색(사번/이름/TxHash 등) |
+| cursor | string (optional) | 페이지 커서 |
+| limit | number (optional) | 페이지 크기 |
 
 ## 4. 지갑 생성 / 일괄 작업
 

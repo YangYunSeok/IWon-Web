@@ -1,0 +1,165 @@
+{
+  "generatedAt": "2026-01-13T01:34:26.679Z",
+  "entries": [
+    {
+      "id": "<resource>.<operation>",
+      "resource": "<resource>",
+      "method": "<HTTP_METHOD>",
+      "path": "</path>",
+      "auth": "none | bearer",
+      "requestType": "<TypeName>",
+      "responseType": "<TypeName>",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webDashboard.getSupply",
+      "resource": "webDashboard",
+      "method": "GET",
+      "path": "/admin/stats/supply",
+      "auth": "bearer",
+      "requestType": "GetSupplySummaryRequest",
+      "responseType": "SupplySummary",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webDashboard.getDaily",
+      "resource": "webDashboard",
+      "method": "GET",
+      "path": "/admin/stats/daily",
+      "auth": "bearer",
+      "requestType": "GetDailyMetricsRequest",
+      "responseType": "DailyMetrics",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webWallet.listEmployees",
+      "resource": "webWallet",
+      "method": "GET",
+      "path": "/admin/employees",
+      "auth": "bearer",
+      "requestType": "ListEmployeesRequest",
+      "responseType": "EmployeeWalletListResponse",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webWallet.create",
+      "resource": "webWallet",
+      "method": "POST",
+      "path": "/admin/wallets/create",
+      "auth": "bearer",
+      "requestType": "CreateWalletRequest",
+      "responseType": "CreateWalletResponse",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webMint.request",
+      "resource": "webMint",
+      "method": "POST",
+      "path": "/admin/mint/request",
+      "auth": "bearer",
+      "requestType": "MintRequest",
+      "responseType": "ApprovalRequest",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webBurn.request",
+      "resource": "webBurn",
+      "method": "POST",
+      "path": "/admin/burn/request",
+      "auth": "bearer",
+      "requestType": "BurnRequest",
+      "responseType": "ApprovalRequest",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webApproval.listPending",
+      "resource": "webApproval",
+      "method": "GET",
+      "path": "/admin/approvals/pending",
+      "auth": "bearer",
+      "requestType": "ListPendingApprovalsRequest",
+      "responseType": "ApprovalListResponse",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webApproval.confirm",
+      "resource": "webApproval",
+      "method": "POST",
+      "path": "/admin/approvals/{approvalId}/confirm",
+      "auth": "bearer",
+      "requestType": "ConfirmApprovalRequest",
+      "responseType": "AdminTransaction",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webMonthlyPayee.list",
+      "resource": "webMonthlyPayee",
+      "method": "GET",
+      "path": "/admin/monthly-payees",
+      "auth": "bearer",
+      "requestType": "ListMonthlyPayeesRequest",
+      "responseType": "MonthlyPayeeList",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webMonthlyPayee.createBulk",
+      "resource": "webMonthlyPayee",
+      "method": "POST",
+      "path": "/admin/monthly-payees",
+      "auth": "bearer",
+      "requestType": "CreateMonthlyPayeesRequest",
+      "responseType": "MonthlyPayeeList",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webMonthlyPayee.update",
+      "resource": "webMonthlyPayee",
+      "method": "PUT",
+      "path": "/admin/monthly-payees/{id}",
+      "auth": "bearer",
+      "requestType": "UpdateMonthlyPayeeRequest",
+      "responseType": "MonthlyPayee",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webMonthlyPayee.delete",
+      "resource": "webMonthlyPayee",
+      "method": "DELETE",
+      "path": "/admin/monthly-payees/{id}",
+      "auth": "bearer",
+      "requestType": "DeleteMonthlyPayeeRequest",
+      "responseType": "DeleteMonthlyPayeeResponse",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webMonthlyPayee.bulkDelete",
+      "resource": "webMonthlyPayee",
+      "method": "POST",
+      "path": "/admin/monthly-payees/bulk-delete",
+      "auth": "bearer",
+      "requestType": "BulkDeleteMonthlyPayeesRequest",
+      "responseType": "BulkDeleteMonthlyPayeesResponse",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webMonthlyPayee.export",
+      "resource": "webMonthlyPayee",
+      "method": "GET",
+      "path": "/admin/monthly-payees/export",
+      "auth": "bearer",
+      "requestType": "ExportMonthlyPayeesRequest",
+      "responseType": "ExportMonthlyPayeesResponse",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webTxHistory.list",
+      "resource": "webTxHistory",
+      "method": "GET",
+      "path": "/admin/transactions",
+      "auth": "bearer",
+      "requestType": "ListAdminTransactionsRequest",
+      "responseType": "AdminTransactionListResponse",
+      "sourceFile": "docs/design/api/web-admin.md"
+    }
+  ]
+}

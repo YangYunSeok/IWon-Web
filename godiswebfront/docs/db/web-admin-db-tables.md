@@ -1,6 +1,6 @@
 # Web Admin DB 테이블 명세
 
-이 문서는 관리자 웹(지갑관리, 지급/회수, 승인, 대시보드)을 위한 권장 데이터베이스 테이블 명세입니다.
+이 문서는 관리자 웹을 위한 권장 데이터베이스 테이블 명세입니다.
 
 전제
 - DB: PostgreSQL 표기 기준
@@ -14,162 +14,162 @@
 ## Admin Users
 - 목적: 관리자 계정 (operator / approver)
 - 컬럼:
-  - `id`: uuid PRIMARY KEY DEFAULT gen_random_uuid()
-  - `username`: varchar(150) NOT NULL UNIQUE
-  - `display_name`: varchar(200) NOT NULL
-  - `email`: varchar(320) NULL
-  - `password_hash`: varchar(255) NOT NULL
-  - `role_id`: uuid NOT NULL REFERENCES admin_roles(id)
-  - `status`: varchar(20) NOT NULL DEFAULT 'active' -- (active/inactive)
-  - `created_at`: timestamptz NOT NULL DEFAULT now()
-  - `last_login`: timestamptz NULL
+  - `id`: uuid PRIMARY KEY DEFAULT gen_random_uuid()  # 관리자 고유 ID
+  - `username`: varchar(150) NOT NULL UNIQUE  # 로그인 ID(고유)
+  - `display_name`: varchar(200) NOT NULL  # 화면 표시 이름
+  - `email`: varchar(320) NULL  # 이메일
+  - `password_hash`: varchar(255) NOT NULL  # 비밀번호 해시
+  - `role_id`: uuid NOT NULL REFERENCES admin_roles(id)  # 역할 ID(FK)
+  - `status`: varchar(20) NOT NULL DEFAULT 'active'  # 계정 상태(active/inactive)
+  - `created_at`: timestamptz NOT NULL DEFAULT now()  # 생성일시
+  - `last_login`: timestamptz NULL  # 마지막 로그인 일시
 - 인덱스: `username` (unique), `role_id`
 
 ## Admin Roles
 - 목적: 역할 정의
 - 컬럼:
-  - `id`: uuid PRIMARY KEY
-  - `name`: varchar(50) NOT NULL UNIQUE -- e.g., operator, approver
-  - `description`: text NULL
+  - `id`: uuid PRIMARY KEY  # 역할 고유 ID
+  - `name`: varchar(50) NOT NULL UNIQUE  # 역할명(예: operator, approver)
+  - `description`: text NULL  # 설명
 
   
 ## Audit Logs
 - 목적: 주요 관리자 행위 감사 로그
 - 컬럼:
-  - `id`: uuid PRIMARY KEY
-  - `actor_id`: uuid NULL REFERENCES admin_users(id)
-  - `action`: varchar(100) NOT NULL
-  - `resource_type`: varchar(100) NULL
-  - `resource_id`: varchar(255) NULL
-  - `details`: jsonb NULL
-  - `created_at`: timestamptz NOT NULL DEFAULT now()
+  - `id`: uuid PRIMARY KEY  # 로그 고유 ID
+  - `actor_id`: uuid NULL REFERENCES admin_users(id)  # 행위자 ID
+  - `action`: varchar(100) NOT NULL  # 행위명
+  - `resource_type`: varchar(100) NULL  # 리소스 종류
+  - `resource_id`: varchar(255) NULL  # 리소스 ID
+  - `details`: jsonb NULL  # 상세 정보
+  - `created_at`: timestamptz NOT NULL DEFAULT now()  # 생성일시
 - 인덱스: `actor_id`, `created_at`
 
 ## Employees
 - 목적: 임직원 기본정보 및 지갑 상태
 - 컬럼:
-  - `employee_id`: varchar(50) PRIMARY KEY -- 사번
-  - `name`: varchar(200) NOT NULL
-  - `department`: varchar(200) NULL
-  - `email`: varchar(320) NULL
-  - `phone`: varchar(50) NULL
-  - `hire_date`: date NULL
-  - `wallet_status`: varchar(20) NOT NULL DEFAULT 'uncreated' -- (uncreated/active/frozen)
-  - `created_at`: timestamptz NOT NULL DEFAULT now()
-  - `updated_at`: timestamptz NULL
+  - `employee_id`: varchar(50) PRIMARY KEY  # 사번(고유)
+  - `name`: varchar(200) NOT NULL  # 이름
+  - `department`: varchar(200) NULL  # 부서
+  - `email`: varchar(320) NULL  # 이메일
+  - `phone`: varchar(50) NULL  # 전화번호
+  - `hire_date`: date NULL  # 입사일
+  - `wallet_status`: varchar(20) NOT NULL DEFAULT 'uncreated'  # 지갑상태(uncreated/active/frozen)
+  - `created_at`: timestamptz NOT NULL DEFAULT now()  # 생성일시
+  - `updated_at`: timestamptz NULL  # 수정일시
 - 인덱스: `department`, `name`
 
 ## Coin Types
 - 목적: 발행 자산(코인) 정의
 - 컬럼:
-  - `coin_type`: varchar(50) PRIMARY KEY
-  - `name`: varchar(100) NOT NULL
-  - `decimals`: integer NOT NULL DEFAULT 0
-  - `metadata`: jsonb NULL
+  - `coin_type`: varchar(50) PRIMARY KEY  # 코인 타입(고유)
+  - `name`: varchar(100) NOT NULL  # 코인명
+  - `decimals`: integer NOT NULL DEFAULT 0  # 소수점 자리수
+  - `metadata`: jsonb NULL  # 추가 메타정보
 
 ## Wallets
 - 목적: 임직원 지갑(온체인 주소 등)
 - 컬럼:
-  - `id`: uuid PRIMARY KEY
-  - `employee_id`: varchar(50) NOT NULL REFERENCES employees(employee_id)
-  - `address`: varchar(200) NULL UNIQUE
-  - `status`: varchar(20) NOT NULL DEFAULT 'uncreated' -- (uncreated/active/frozen)
-  - `balance`: bigint NOT NULL DEFAULT 0
-  - `coin_type`: varchar(50) NOT NULL REFERENCES coin_types(coin_type)
-  - `created_at`: timestamptz NOT NULL DEFAULT now()
-  - `activated_at`: timestamptz NULL
-  - `frozen_at`: timestamptz NULL
-  - `last_sync_at`: timestamptz NULL
+  - `id`: uuid PRIMARY KEY  # 지갑 고유 ID
+  - `employee_id`: varchar(50) NOT NULL REFERENCES employees(employee_id)  # 소유자 사번
+  - `address`: varchar(200) NULL UNIQUE  # 온체인 주소
+  - `status`: varchar(20) NOT NULL DEFAULT 'uncreated'  # 지갑상태(uncreated/active/frozen)
+  - `balance`: bigint NOT NULL DEFAULT 0  # 잔액(IWC)
+  - `coin_type`: varchar(50) NOT NULL REFERENCES coin_types(coin_type)  # 코인 타입
+  - `created_at`: timestamptz NOT NULL DEFAULT now()  # 생성일시
+  - `activated_at`: timestamptz NULL  # 활성화 일시
+  - `frozen_at`: timestamptz NULL  # 동결 일시
+  - `last_sync_at`: timestamptz NULL  # 마지막 동기화 일시
 - 인덱스: `employee_id`, `address`
 
 ## Wallet Transactions (Ledger)
 - 목적: 지갑별 입출금/조정 내역
 - 컬럼:
-  - `id`: uuid PRIMARY KEY
-  - `wallet_id`: uuid NOT NULL REFERENCES wallets(id)
-  - `type`: varchar(30) NOT NULL -- (mint/burn/transfer/adjust)
-  - `amount`: bigint NOT NULL -- 양수(입금) 또는 음수(출금)
-  - `coin_type`: varchar(50) NOT NULL REFERENCES coin_types(coin_type)
-  - `counterparty`: varchar(255) NULL
-  - `related_approval_id`: uuid NULL REFERENCES approvals(id)
-  - `related_tx_id`: varchar(255) NULL
-  - `operator_id`: uuid NULL REFERENCES admin_users(id)
-  - `memo`: text NULL
-  - `created_at`: timestamptz NOT NULL DEFAULT now()
+  - `id`: uuid PRIMARY KEY  # 거래 고유 ID
+  - `wallet_id`: uuid NOT NULL REFERENCES wallets(id)  # 지갑 ID
+  - `type`: varchar(30) NOT NULL  # 거래유형(mint/burn/transfer/adjust)
+  - `amount`: bigint NOT NULL  # 금액(양수:입금, 음수:출금)
+  - `coin_type`: varchar(50) NOT NULL REFERENCES coin_types(coin_type)  # 코인 타입
+  - `counterparty`: varchar(255) NULL  # 상대방 정보
+  - `related_approval_id`: uuid NULL REFERENCES approvals(id)  # 연관 승인 ID
+  - `related_tx_id`: varchar(255) NULL  # 연관 Tx ID
+  - `operator_id`: uuid NULL REFERENCES admin_users(id)  # 처리자 ID
+  - `memo`: text NULL  # 메모
+  - `created_at`: timestamptz NOT NULL DEFAULT now()  # 생성일시
 - 인덱스: `wallet_id`, `created_at`, `related_approval_id`
 
 ## Approvals
 - 목적: 지급/회수 등 승인 워크플로우 메인 레코드
 - 컬럼:
-  - `id`: uuid PRIMARY KEY
-  - `kind`: varchar(30) NOT NULL -- (mint/burn/transfer/other)
-  - `requester_id`: uuid NOT NULL REFERENCES admin_users(id)
-  - `request_payload`: jsonb NOT NULL
-  - `total_amount`: bigint NULL
-  - `coin_type`: varchar(50) NULL REFERENCES coin_types(coin_type)
-  - `status`: varchar(30) NOT NULL DEFAULT 'pending' -- (pending,approved,rejected,executed,cancelled)
-  - `approver_id`: uuid NULL REFERENCES admin_users(id)
-  - `requested_at`: timestamptz NOT NULL DEFAULT now()
-  - `decided_at`: timestamptz NULL
-  - `executed_at`: timestamptz NULL
-  - `reason`: text NULL
+  - `id`: uuid PRIMARY KEY  # 승인 고유 ID
+  - `kind`: varchar(30) NOT NULL  # 승인유형(mint/burn/transfer/other)
+  - `requester_id`: uuid NOT NULL REFERENCES admin_users(id)  # 요청자 ID
+  - `request_payload`: jsonb NOT NULL  # 요청 상세
+  - `total_amount`: bigint NULL  # 총 금액
+  - `coin_type`: varchar(50) NULL REFERENCES coin_types(coin_type)  # 코인 타입
+  - `status`: varchar(30) NOT NULL DEFAULT 'pending'  # 상태(pending,approved 등)
+  - `approver_id`: uuid NULL REFERENCES admin_users(id)  # 승인자 ID
+  - `requested_at`: timestamptz NOT NULL DEFAULT now()  # 요청일시
+  - `decided_at`: timestamptz NULL  # 결정일시
+  - `executed_at`: timestamptz NULL  # 실행일시
+  - `reason`: text NULL  # 사유
 - 인덱스: `status`, `requester_id`, `approver_id`, `requested_at`
 
 ## Approval Targets
 - 목적: 하나의 Approval에 속한 대상 항목
 - 컬럼:
-  - `id`: uuid PRIMARY KEY
-  - `approval_id`: uuid NOT NULL REFERENCES approvals(id) ON DELETE CASCADE
-  - `employee_id`: varchar(50) NULL REFERENCES employees(employee_id)
-  - `wallet_id`: uuid NULL REFERENCES wallets(id)
-  - `amount`: bigint NOT NULL
-  - `note`: text NULL
+  - `id`: uuid PRIMARY KEY  # 대상 고유 ID
+  - `approval_id`: uuid NOT NULL REFERENCES approvals(id) ON DELETE CASCADE  # 승인 ID
+  - `employee_id`: varchar(50) NULL REFERENCES employees(employee_id)  # 사번
+  - `wallet_id`: uuid NULL REFERENCES wallets(id)  # 지갑 ID
+  - `amount`: bigint NOT NULL  # 금액
+  - `note`: text NULL  # 비고
 - 인덱스: `approval_id`, `employee_id`
 
 ## Admin Transactions (Execution Records)
 - 목적: 승인 실행(외부 호출) 결과 및 상태 기록
 - 컬럼:
-  - `id`: uuid PRIMARY KEY
-  - `approval_id`: uuid NOT NULL REFERENCES approvals(id)
-  - `tx_type`: varchar(30) NOT NULL -- (mint/burn/transfer)
-  - `amount`: bigint NULL
-  - `coin_type`: varchar(50) NULL REFERENCES coin_types(coin_type)
-  - `tx_hash`: varchar(255) NULL
-  - `status`: varchar(20) NOT NULL DEFAULT 'pending' -- (pending,success,failed)
-  - `executed_by`: uuid NULL REFERENCES admin_users(id)
-  - `executed_at`: timestamptz NULL
-  - `response`: jsonb NULL
-  - `created_at`: timestamptz NOT NULL DEFAULT now()
+  - `id`: uuid PRIMARY KEY  # 실행 고유 ID
+  - `approval_id`: uuid NOT NULL REFERENCES approvals(id)  # 승인 ID
+  - `tx_type`: varchar(30) NOT NULL  # 트랜잭션 유형(mint/burn/transfer)
+  - `amount`: bigint NULL  # 금액
+  - `coin_type`: varchar(50) NULL REFERENCES coin_types(coin_type)  # 코인 타입
+  - `tx_hash`: varchar(255) NULL  # 온체인 TxHash
+  - `status`: varchar(20) NOT NULL DEFAULT 'pending'  # 상태(pending,success,failed)
+  - `executed_by`: uuid NULL REFERENCES admin_users(id)  # 실행자 ID
+  - `executed_at`: timestamptz NULL  # 실행일시
+  - `response`: jsonb NULL  # 외부 응답
+  - `created_at`: timestamptz NOT NULL DEFAULT now()  # 생성일시
 - 인덱스: `approval_id`, `status`, `tx_hash`
 
 ## Stats Daily
 - 목적: 대시보드용 일별 집계
 - 컬럼:
-  - `date`: date PRIMARY KEY
-  - `total_supply`: bigint NOT NULL
-  - `minted_today`: bigint NOT NULL DEFAULT 0
-  - `burned_today`: bigint NOT NULL DEFAULT 0
-  - `active_wallets`: integer NOT NULL DEFAULT 0
-  - `created_at`: timestamptz NOT NULL DEFAULT now()
+  - `date`: date PRIMARY KEY  # 집계 일자
+  - `total_supply`: bigint NOT NULL  # 총 발행량
+  - `minted_today`: bigint NOT NULL DEFAULT 0  # 당일 발행량
+  - `burned_today`: bigint NOT NULL DEFAULT 0  # 당일 소각/회수량
+  - `active_wallets`: integer NOT NULL DEFAULT 0  # 활성 지갑 수
+  - `created_at`: timestamptz NOT NULL DEFAULT now()  # 생성일시
 
 ## Supply Summary History (선택)
 - 목적: 총 발행량 스냅샷
 - 컬럼:
-  - `id`: uuid PRIMARY KEY
-  - `snapshot_at`: timestamptz NOT NULL DEFAULT now()
-  - `total_supply`: bigint NOT NULL
-  - `metadata`: jsonb NULL
+  - `id`: uuid PRIMARY KEY  # 스냅샷 고유 ID
+  - `snapshot_at`: timestamptz NOT NULL DEFAULT now()  # 스냅샷 시점
+  - `total_supply`: bigint NOT NULL  # 총 발행량
+  - `metadata`: jsonb NULL  # 추가 정보
 
 ## Supply Snapshots (코인별 상세 스냅샷, 선택)
 - 목적: 특정 시점의 코인별 합계(대시보드 `SupplySummary.coinTotals` 대응)
 - 컬럼:
-  - `id`: uuid PRIMARY KEY
-  - `snapshot_id`: uuid NOT NULL REFERENCES supply_summary_history(id) ON DELETE CASCADE
-  - `coin_type`: varchar(50) NOT NULL REFERENCES coin_types(coin_type)
-  - `db_total`: bigint NOT NULL
-  - `chain_total`: bigint NOT NULL
-  - `matched`: boolean NOT NULL DEFAULT false
-  - `note`: text NULL
+  - `id`: uuid PRIMARY KEY  # 상세 스냅샷 고유 ID
+  - `snapshot_id`: uuid NOT NULL REFERENCES supply_summary_history(id) ON DELETE CASCADE  # 스냅샷 ID
+  - `coin_type`: varchar(50) NOT NULL REFERENCES coin_types(coin_type)  # 코인 타입
+  - `db_total`: bigint NOT NULL  # DB 기준 총액
+  - `chain_total`: bigint NOT NULL  # 온체인 기준 총액
+  - `matched`: boolean NOT NULL DEFAULT false  # 일치 여부
+  - `note`: text NULL  # 비고
 - 인덱스: `snapshot_id`, `coin_type`
 
 ## Monthly Payees (월별 지급 대상자)
@@ -177,19 +177,19 @@
 
 ### monthly_payees
 - 컬럼:
-  - `id`: uuid PRIMARY KEY
-  - `year`: integer NOT NULL -- 지급 연도
-  - `month`: integer NOT NULL -- 지급 월(1..12)
-  - `employee_id`: varchar(50) NULL REFERENCES employees(employee_id)
-  - `name`: varchar(200) NOT NULL
-  - `coin_type`: varchar(50) NOT NULL REFERENCES coin_types(coin_type)
-  - `amount`: bigint NOT NULL
-  - `reason`: text NULL
-  - `status`: varchar(20) NOT NULL DEFAULT 'scheduled' -- (scheduled/paid/cancelled)
-  - `scheduled_at`: timestamptz NULL
-  - `paid_at`: timestamptz NULL
-  - `created_by`: uuid NULL REFERENCES admin_users(id)
-  - `created_at`: timestamptz NOT NULL DEFAULT now()
+  - `id`: uuid PRIMARY KEY  # 지급대상 고유 ID
+  - `year`: integer NOT NULL  # 지급 연도
+  - `month`: integer NOT NULL  # 지급 월(1..12)
+  - `employee_id`: varchar(50) NULL REFERENCES employees(employee_id)  # 사번
+  - `name`: varchar(200) NOT NULL  # 이름
+  - `coin_type`: varchar(50) NOT NULL REFERENCES coin_types(coin_type)  # 코인 타입
+  - `amount`: bigint NOT NULL  # 금액
+  - `reason`: text NULL  # 지급 사유
+  - `status`: varchar(20) NOT NULL DEFAULT 'scheduled'  # 상태(scheduled/paid/cancelled)
+  - `scheduled_at`: timestamptz NULL  # 예정 지급일시
+  - `paid_at`: timestamptz NULL  # 실제 지급일시
+  - `created_by`: uuid NULL REFERENCES admin_users(id)  # 생성자 ID
+  - `created_at`: timestamptz NOT NULL DEFAULT now()  # 생성일시
 - 제약/인덱스:
   - UNIQUE(year, month, employee_id, coin_type) -- 중복 방지
   - 인덱스: `year`, `month`, `employee_id`, `status`
@@ -199,13 +199,13 @@ Note: 전월 데이터 가져오기나 CSV 업로드 이력은 별도 로그 테
 ## Coin Daily Aggregates (코인별 일별 집계, 선택)
 - 목적: `stats_daily`보다 더 상세한 코인 단위의 일별 집계가 필요할 경우 사용. 대시보드 집계 성능을 위해 일별 집계를 별도 테이블에 보관 권장.
 - 컬럼:
-  - `date`: date NOT NULL
-  - `coin_type`: varchar(50) NOT NULL REFERENCES coin_types(coin_type)
-  - `total_supply`: bigint NOT NULL -- 해당 코인 DB 기준 총 유통량
-  - `minted`: bigint NOT NULL DEFAULT 0 -- 해당 일자 발행
-  - `burned`: bigint NOT NULL DEFAULT 0 -- 해당 일자 소각/회수
-  - `active_wallets`: integer NOT NULL DEFAULT 0
-  - `created_at`: timestamptz NOT NULL DEFAULT now()
+  - `date`: date NOT NULL  # 집계 일자
+  - `coin_type`: varchar(50) NOT NULL REFERENCES coin_types(coin_type)  # 코인 타입
+  - `total_supply`: bigint NOT NULL  # 해당 코인 DB 기준 총 유통량
+  - `minted`: bigint NOT NULL DEFAULT 0  # 해당 일자 발행
+  - `burned`: bigint NOT NULL DEFAULT 0  # 해당 일자 소각/회수
+  - `active_wallets`: integer NOT NULL DEFAULT 0  # 활성 지갑 수
+  - `created_at`: timestamptz NOT NULL DEFAULT now()  # 생성일시
 - 제약/인덱스: PRIMARY KEY(date, coin_type), 인덱스: `coin_type`
 
 권고: 
@@ -228,4 +228,12 @@ API ↔ 테이블 매핑(주요)
 - `POST /admin/burn/request` → `approvals`(kind=burn) + `approval_targets`
 - `GET /admin/approvals/pending` → `approvals` WHERE status='pending' (조인: approval_targets)
 - `POST /admin/approvals/{approvalId}/confirm` → 트랜잭션: approvals.status 변경 → `admin_transactions` 생성 → `wallet_transactions` 생성 → `audit_logs`
+- `GET /admin/stats/supply` → `supply_summary_history` (+ `supply_snapshots`) (온체인 수치는 외부 노드/인덱서 결과를 함께 사용)
 - `GET /admin/stats/daily` → `stats_daily`
+- `GET /admin/monthly-payees` → `monthly_payees`
+- `POST /admin/monthly-payees` → `monthly_payees`(등록/업서트) + `audit_logs`
+- `PUT /admin/monthly-payees/{id}` → `monthly_payees` 업데이트 + `audit_logs`
+- `DELETE /admin/monthly-payees/{id}` → `monthly_payees` 삭제 + `audit_logs`
+- `POST /admin/monthly-payees/bulk-delete` → `monthly_payees` 일괄 삭제 + `audit_logs`
+- `GET /admin/monthly-payees/export` → `monthly_payees` (조회 후 CSV/XLSX 생성)
+- `(TBD) GET /admin/transactions` → `wallet_transactions` (+ `wallets`, `employees`, `approvals`, `admin_transactions` 조인)

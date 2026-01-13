@@ -266,16 +266,90 @@ Request Body: `CreateMonthlyPayeesRequest` (예: year, month, items[{ employeeId
 
 - Response: 등록된 `MonthlyPayeeList` (중복/유효성 검사 결과 포함 가능)
 
-#### 3.5.3. 월별 지급 대상자 수정/삭제
+#### 3.5.3. 월별 지급 대상자 단건 수정
 
-- 단건 수정: `PUT /admin/monthly-payees/{id}`
-- 단건 삭제: `DELETE /admin/monthly-payees/{id}`
-- 일괄 삭제: `POST /admin/monthly-payees/bulk-delete` (id 리스트)
+- **Method/Path**: `PUT /admin/monthly-payees/{id}`
+- **Auth**: bearer
 
-#### 3.5.4. 월별 지급 파일 내보내기
+```@codegen
+id: webMonthlyPayee.update
+resource: webMonthlyPayee
+method: PUT
+path: /admin/monthly-payees/{id}
+auth: bearer
+requestType: UpdateMonthlyPayeeRequest
+responseType: MonthlyPayee
+```
+
+- Path Param: `id`
+- Request Body: `UpdateMonthlyPayeeRequest`
+- Response: 수정된 `MonthlyPayee`
+
+#### 3.5.4. 월별 지급 대상자 단건 삭제
+
+- **Method/Path**: `DELETE /admin/monthly-payees/{id}`
+- **Auth**: bearer
+
+```@codegen
+id: webMonthlyPayee.delete
+resource: webMonthlyPayee
+method: DELETE
+path: /admin/monthly-payees/{id}
+auth: bearer
+requestType: DeleteMonthlyPayeeRequest
+responseType: DeleteMonthlyPayeeResponse
+```
+
+- Path Param: `id`
+- Response: `DeleteMonthlyPayeeResponse`
+
+#### 3.5.5. 월별 지급 대상자 일괄 삭제
+
+- **Method/Path**: `POST /admin/monthly-payees/bulk-delete`
+- **Auth**: bearer
+
+```@codegen
+id: webMonthlyPayee.bulkDelete
+resource: webMonthlyPayee
+method: POST
+path: /admin/monthly-payees/bulk-delete
+auth: bearer
+requestType: BulkDeleteMonthlyPayeesRequest
+responseType: BulkDeleteMonthlyPayeesResponse
+```
+
+#### 3.5.6. 월별 지급 파일 내보내기
 
 - **Method/Path**: `GET /admin/monthly-payees/export?year=YYYY&month=MM&coinType=...`
 - CSV/XLSX로 내보내기 (UI에서 다운로드)
+
+```@codegen
+id: webMonthlyPayee.export
+resource: webMonthlyPayee
+method: GET
+path: /admin/monthly-payees/export
+auth: bearer
+requestType: ExportMonthlyPayeesRequest
+responseType: ExportMonthlyPayeesResponse
+```
+
+Note: 다운로드 응답 형식(스트림 vs URL vs base64)은 구현 단계에서 확정하며, 확정 시 `ExportMonthlyPayeesResponse`를 이에 맞게 갱신합니다.
+
+### 3.6. 거래 이력 조회 (TBD)
+
+> UI 요구사항은 `docs/design/ui/admin/web-tx-history.md`에 있으며, API는 아직 확정 전입니다.
+
+- (제안) **Method/Path**: `GET /admin/transactions`
+
+```@codegen
+id: webTxHistory.list
+resource: webTxHistory
+method: GET
+path: /admin/transactions
+auth: bearer
+requestType: ListAdminTransactionsRequest
+responseType: AdminTransactionListResponse
+```
 
 ## 4. 문서 유지보수 메모
 
