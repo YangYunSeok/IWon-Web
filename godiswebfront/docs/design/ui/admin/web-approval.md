@@ -1,12 +1,12 @@
-# Web Admin 온체인 승인 관리 (Approval)
+# Web Admin 승인 관리 (Approval)
 
 > 원본: `docs/기본설계문서/웹UI및설계가이드(관리자용).md` 7장.
 > API 참조: `webApproval.*`.
 
 ## 1. 목적
 
-- Mint/Burn 기안의 사전 통제 및 최종 실행.
-- Approver 전용 화면, Operator 는 조회만 가능.
+- 외부(앱/시스템)에서 생성된 요청을 단일 화면에서 승인/반려.
+- Approver 는 승인 처리, Operator 는 조회만 가능.
 
 ## 2. 레이아웃
 
@@ -15,11 +15,13 @@
    - 경고 발생 건수 (검증 실패 등)
    - 승인 후 예상 준비금 비율 (계산식 서버 제공)
 2. **승인 대기 목록(Table)**
-   - 컬럼: 유형, 기안 제목, 총 금액, 시스템 사전 검증 결과, 요청 일시, `[상세보기]`.
+   - 컬럼: 요청 유형, 요청 주체, 가맹점명/대상자, 요청 금액, 요청 일시, 상태, `[상세보기]`.
 3. **승인 상세 팝업**
-   - Before/After 유통량 비교
-   - 오류 대상 리스트 (지갑 미생성, 한도 초과)
-   - 정산용 Excel 다운로드
+   - 공통: 첨부/증빙, 승인/반려(반려 사유 필수), 승인 이력 타임라인
+   - 유형별:
+     - (정산요청) 정산 기간, 거래 요약(건수/총액/수수료/정산금액), (선택) 정산 내역 다운로드
+     - (전환요청) 대상자, 전환 금액/사유
+     - (Mint/Burn) Before/After 유통량 비교, 시스템 사전 검증 결과
 4. **Action 영역**
    - `[승인 실행]`, `[반려]` (사유 입력)
    - 실행 결과 로그: Tx Hash, 블록 번호
@@ -28,9 +30,10 @@
 
 | 단계 | API |
 | --- | --- |
-| 목록 조회 | `GET /admin/approvals/pending` |
-| 상세 보기 | 동일 응답의 `ApprovalRequest` + 별도 상세 API(추후) |
+| 목록 조회 | `GET /admin/approvals` (기본 status=pending) |
+| 상세 보기 | `GET /admin/approvals/{approvalId}` |
 | 승인 실행 | `POST /admin/approvals/{approvalId}/confirm` |
+| 승인 반려 | `POST /admin/approvals/{approvalId}/reject` |
 
 ## 4. 상태/에러 처리
 
@@ -44,4 +47,4 @@
 ## 5. 권한
 
 - Operator: 목록/상세 조회만 가능, 모든 Action 버튼 비활성 + Tooltip.
-- Approver: 실행 가능. 실행 시 지문/2FA 추가 검토 필요 시 모달 삽입 가능.
+- Approver: 실행/반려 가능. 실행 시 추가 보안(2FA 등) 필요 시 모달 삽입 가능.

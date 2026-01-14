@@ -1,6 +1,10 @@
 ---
+name: GODIS Admin Web Instructions
+description: SSOT-first instructions for GODIS Admin Web (React + Spring Boot + MyBatis)
+applyTo: "**/*"
+---
 
-# 🧠 Copilot Instructions – GODIS Admin Web (v1.0)
+# 🧠 Copilot Instructions – GODIS Admin Web (v1.1)
 
 ## 1. Scope (NON-NEGOTIABLE)
 
@@ -22,20 +26,23 @@ Copilot must treat documents and existing contracts as **executable agreements**
 
 ### Priority Order (STRICT)
 
-1. **Design / SSOT documents**
+1. **SSOT hub + design documents**
 
-   * `docs/기본설계문서`
-   * `docs/design`
-2. **Frontend API contracts**
+   * `docs/design/_index.md` (SSOT rules & document map)
+   * API contract: `docs/design/api/*`
+   * Model meaning: `docs/design/model/*`
+   * UI behavior: `docs/design/ui/*`
+2. Existing codebase patterns in this repository
+3. Implementation details
 
-   * `src/api/*.jsx`
-3. Existing codebase patterns in this repository
-4. Implementation details
+Legacy docs are reference-only unless explicitly requested:
+
+* `docs/기본설계문서/*`
 
 ### Rules
 
 * ❌ Do NOT generate features, fields, or APIs that are not defined in the design documents
-* If an existing API contract exists in `src/api`, **it is the absolute source of truth**
+* `src/api/*.jsx` is implementation code (derived). If it conflicts with `docs/design/api/*`, update to match SSOT or update SSOT first (never guess).
 * If a requirement is unclear or missing:
 
   * ❌ Do NOT implement
@@ -49,22 +56,28 @@ Copilot must **never guess**.
 
 ```
 docs/
- ├ 기본설계문서/                ← Original SSOT
- └ design/                      ← Web-specific refined design
+ ├ 기본설계문서/                ← Legacy (reference-only)
+ └ design/                      ← Web SSOT (api/model/ui)
     ├ api/
     │   └ web-admin.md
     ├ model/
     │   ├ web-admin.md
     │   ├ web-common-types.md
     │   └ web-error-codes.md
-    └ ui/admin/
-        ├ web-admin-console.md
-        ├ web-approval.md
-        ├ web-coin-dist.md
-        ├ web-dashboard.md
-        ├ web-monthly-plan.md
-        ├ web-tx-history.md
-        └ web-wallet-mgmt.md
+   └ ui/
+      ├ _screen-map.md
+      └ admin/
+         ├ web-approval.md
+         ├ web-coin-dist.md
+         ├ web-dashboard.md
+         ├ web-financial-closing.md
+         ├ web-monthly-plan.md
+         ├ web-tx-history.md
+         └ web-wallet-mgmt.md
+
+See also:
+
+* `docs/기본설계문서/3.설계문서_이관(리팩토링)_실무_가이드.md`
 ```
 
 ---
@@ -104,30 +117,12 @@ Rules:
 
 ---
 
-### 5.2 File Naming Rules (STRICT)
+### 5.2 Screen File Names (SSOT)
 
-#### Screen
+Screen file names are specified by SSOT. Do NOT invent naming rules or auto-increment numbers.
 
-```
-STOCOIN{NN}S1.jsx
-```
-
-#### Popup
-
-```
-STOCOIN{NN}P1.jsx
-```
-
-Rules:
-
-* `STOCOIN`: fixed prefix
-* `{NN}`: two-digit sequential number (increment only)
-* `S1`: Screen
-* `P1`: Popup
-* One screen per file
-* ❌ Descriptive filenames are forbidden
-* ❌ `.tsx` is forbidden
-* ❌ Arbitrary prefixes or suffixes are forbidden
+* Use the exact filename from `docs/design/ui/_screen-map.md`
+* If a new screen is required, update SSOT first (screen-map + UI doc), then implement
 
 ---
 
@@ -155,6 +150,17 @@ Default layout (**MANDATORY**):
 * Grid rows: `rows`
 * Selected row: `selectedRow`
 * Popup open/close state: **local state only**
+
+---
+
+### 5.4 Design Doc File Naming (Docs)
+
+When creating new docs under `docs/design/**`, prefix the filename with `web-`.
+
+Allowed exceptions (fixed hub files):
+
+* `docs/design/_index.md`
+* `docs/design/ui/_screen-map.md`
 
 ---
 
@@ -258,6 +264,61 @@ Partial output is ❌ forbidden.
 * ❌ Rename screen files arbitrarily
 * ❌ Generate APIs, fields, or UI not defined in SSOT
 * ❌ Modify existing `src/api` files without explicit instruction
+
+---
+
+## 9. Doc Role Boundaries (MUST FOLLOW)
+
+Do not mix responsibilities between documents.
+
+* API docs (`docs/design/api/*`): machine-friendly contract only (method/path/auth, request/response, status/error, pagination, `@codegen` blocks)
+* Model docs (`docs/design/model/*`): meaning/rules (field meaning, enums, invariants, state semantics)
+* UI docs (`docs/design/ui/*`): behavior/UX (when to call which API, loading/error/empty states, server value → UI label mapping)
+
+If one section contains multiple responsibilities, split it.
+
+---
+
+## 10. Codegen / Docs Validation
+
+After editing `docs/design/api/*`:
+
+* Lint docs: `cd godiswebfront/codegen && npm run docs:lint`
+* (Optional) Manifest: `cd godiswebfront/codegen && npm run docs:manifest`
+
+Outputs:
+
+* `godiswebfront/validate-docs-report.json`
+* `godiswebfront/codegen/out/api-manifest.json`
+
+---
+
+## 11. Minimal Templates (Few-shot)
+
+### 11.1 API endpoint (docs/design/api/*)
+
+```@codegen
+id: webResource.operation
+resource: webResource
+method: GET
+path: /admin/example
+auth: bearer
+requestType: ExampleRequest
+responseType: ExampleResponse
+```
+
+### 11.2 Model entity (docs/design/model/*)
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| status | SomeStatus | 상태 의미를 사람이 이해할 수 있게 정의 |
+
+### 11.3 UI screen (docs/design/ui/*)
+
+* 화면 진입 시: `GET ...` 호출
+* 로딩: Skeleton
+* 빈 상태: “조회된 데이터가 없습니다”
+* 실패: 에러 토스트 + 재시도
 * ❌ Implement based on assumptions or guesses
 
 ---

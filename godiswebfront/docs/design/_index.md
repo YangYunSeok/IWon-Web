@@ -52,13 +52,17 @@ Outputs:
 ### UI
 
 - `docs/design/ui/_screen-map.md`
-- `docs/design/ui/admin/web-admin-console.md`
 - `docs/design/ui/admin/web-dashboard.md`
 - `docs/design/ui/admin/web-wallet-mgmt.md`
 - `docs/design/ui/admin/web-coin-dist.md`
 - `docs/design/ui/admin/web-tx-history.md`
 - `docs/design/ui/admin/web-approval.md`
 - `docs/design/ui/admin/web-monthly-plan.md`
+- `docs/design/ui/admin/web-financial-closing.md`
+
+## Migration Guide
+
+- Source guide: `docs/기본설계문서/3.설계문서_이관(리팩토링)_실무_가이드.md`
 
 ## Change Log
 

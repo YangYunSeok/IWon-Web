@@ -1,7 +1,7 @@
 # Web Admin 거래 이력 조회 (TxHistory)
 
 > 원본: `docs/기본설계문서/웹UI및설계가이드(관리자용).md` 6장.
-> API: 추후 `AdminTransaction` 목록 전용 엔드포인트 예정(현재 문서에서는 UI 스펙만 유지).
+> API 참조: `webTxHistory.list`.
 
 ## 1. 목적
 
@@ -17,7 +17,7 @@
 | 코인 타입 | 복지 / 결제 |
 | 통합 검색 | 사번, 이름, TxHash |
 
-필터 변경 시 목록 API 재호출 (추후 `GET /admin/transactions`).
+필터 변경 시 목록 API 재호출 (`GET /admin/transactions`).
 
 ## 3. 바디 (테이블)
 
@@ -39,5 +39,5 @@
 
 ## 6. TODO
 
-- API 확정 시 `webDashboard` 와 동일한 `AdminTransaction` 모델 재사용.
+- 모델/요청 타입은 SSOT인 `docs/design/model/web-admin.md`를 따른다.
 - `[재처리]` 버튼 필요 시 Approval 화면 딥링크 추가.

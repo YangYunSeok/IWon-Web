@@ -39,10 +39,10 @@
 | month | number | 지급 월(1-12) |
 | employeeId | string | 사번 |
 | name | string | 수혜자 이름 |
-| coinType | string | 지급 코인 종류 |
+| coinType | CoinType | 지급 코인 종류 |
 | amount | IWC | 지급 금액 |
 | reason | string (optional) | 지급 사유/메모 |
-| status | string | 상태(예: scheduled/paid/cancelled) |
+| status | MonthlyPayeeStatus | 상태(예: scheduled/paid/cancelled) |
 | scheduledAt | ISODateString (optional) | 예약 지급 시점 |
 | paidAt | ISODateString (optional) | 지급 완료 시각 |
 | createdBy | string | 등록자(admin user id) |
@@ -62,6 +62,17 @@
 | amount | IWC (optional) | 지급 금액 수정 |
 | reason | string (optional) | 지급 사유/메모 수정 |
 | status | MonthlyPayeeStatus (optional) | 상태 변경(scheduled/paid/cancelled) |
+
+### UpsertMonthlyPayeeRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| year | number | 연도 |
+| month | number | 월 |
+| employeeId | string | 사번 |
+| coinType | CoinType | 코인 |
+| amount | IWC | 금액 |
+| reason | string (optional) | 지급 사유/메모 |
 
 ### DeleteMonthlyPayeeRequest
 
@@ -94,7 +105,7 @@
 | --- | --- | --- |
 | year | number | 연도 |
 | month | number | 월 |
-| coinType | string (optional) | 코인 필터 |
+| coinType | CoinType (optional) | 코인 필터 |
 | format | 'csv' \| 'xlsx' (optional) | 내보내기 포맷 |
 
 ### ExportMonthlyPayeesResponse
@@ -104,6 +115,22 @@
 | downloadUrl | string | 다운로드 URL(또는 스트림 방식이면 제거/대체) |
 | fileName | string (optional) | 파일명 |
 | expiresAt | ISODateString (optional) | URL 만료 시각 |
+
+### ConfirmMonthlyPayeesRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| year | number | 연도 |
+| month | number | 월 |
+
+### ConfirmMonthlyPayeesResponse
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| year | number | 연도 |
+| month | number | 월 |
+| status | MonthlyPlanStatus | 확정 상태 |
+| confirmedAt | ISODateString (optional) | 확정 시각 |
 
 ## 2. 임직원 / 지갑
 
@@ -134,7 +161,7 @@
 | txId | string | 트랜잭션 ID |
 | txHash | string (optional) | 온체인 해시 |
 | type | TxType | 유형 (mint/burn/transfer) |
-| coinType | CoinUsageCategory | 코인 용도 구분 |
+| coinType | CoinType | 코인 유형 |
 | amount | IWC | 금액 |
 | status | AdminTxStatus | 처리 상태 |
 | createdAt | ISODateString | 요청 시각 |
@@ -144,36 +171,81 @@
 | 필드 | 타입 | 설명 |
 | --- | --- | --- |
 | approvalId | string | 승인 요청 ID |
-| title | string | 기안 제목 |
-| type | TxType | 트랜잭션 유형 |
-| totalAmount | IWC | 총 금액 |
+| type | ApprovalType | 승인 요청 유형 |
+| requesterType | ApprovalRequesterType | 요청 주체 |
+| requesterName | string (optional) | 요청 주체 표시명(가맹점/시스템/관리자) |
+| subjectName | string (optional) | 가맹점명 또는 대상자 표시명 |
+| amount | IWC | 요청 금액 |
 | status | ApprovalStatus | 승인 상태 |
 | requestedAt | ISODateString | 요청 시각 |
+| title | string (optional) | (레거시/옵션) UI 표시용 제목 |
+
+### ApprovalDetail
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| approval | ApprovalRequest | 헤더 정보 |
+| attachments | { name: string, url: string }[] (optional) | 첨부 / 증빙 |
+| timeline | { status: ApprovalStatus, at: ISODateString, by?: string, reason?: string }[] (optional) | 승인 이력 타임라인 |
+| summary | { txCount?: number, totalAmount?: IWC, fee?: IWC, settlementAmount?: IWC } (optional) | (정산요청) 거래 요약 |
+| conversion | { employeeId?: string, name?: string, amount?: IWC, reason?: string } (optional) | (전환요청) 정보 |
+| mintBurn | { beforeTotal?: IWC, afterTotal?: IWC, precheck?: string[] } (optional) | (Mint/Burn) 비교/사전검증 |
 
 ### ApprovalListResponse
 
 | 필드 | 타입 | 설명 |
 | --- | --- | --- |
-| items | ApprovalRequest[] | 승인 대기 목록 |
+| items | ApprovalRequest[] | 승인 목록 |
+| total | number | 전체 건수 |
 
-### AdminTransactionListResponse
+### TransactionListResponse
 
 | 필드 | 타입 | 설명 |
 | --- | --- | --- |
 | items | AdminTransaction[] | 거래 목록 |
-| nextCursor | string (optional) | 다음 페이지 커서 |
+| total | number | 전체 건수 |
 
-### ListAdminTransactionsRequest
+### ListTransactionsRequest
 
 | 필드 | 타입 | 설명 |
 | --- | --- | --- |
 | from | ISODateString (optional) | 시작일시(필터) |
 | to | ISODateString (optional) | 종료일시(필터) |
 | type | TxType (optional) | 유형 필터 |
-| coinType | CoinUsageCategory (optional) | 코인 용도 필터 |
-| query | string (optional) | 통합 검색(사번/이름/TxHash 등) |
-| cursor | string (optional) | 페이지 커서 |
-| limit | number (optional) | 페이지 크기 |
+| coinType | CoinType (optional) | 코인 필터 |
+| keyword | string (optional) | 통합 검색(사번/이름/TxHash 등) |
+| page | number (optional) | 페이지(1-base) |
+| size | number (optional) | 페이지 크기 |
+
+### ListApprovalsRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| status | ApprovalStatus (optional) | 상태 필터(기본: pending) |
+| department | string (optional) | 부서(조직) |
+| name | string (optional) | 이름 검색(부분일치) |
+| keyword | string (optional) | 통합 검색 |
+| page | number (optional) | 페이지(1-base) |
+| size | number (optional) | 페이지 크기 |
+
+### GetApprovalRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| approvalId | string | 승인 요청 ID (path param) |
+
+### ConfirmApprovalRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| approvalId | string | 승인 요청 ID (path param) |
+
+### RejectApprovalRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| approvalId | string | 승인 요청 ID (path param) |
+| reason | string | 반려 사유(필수) |
 
 ## 4. 지갑 생성 / 일괄 작업
 
