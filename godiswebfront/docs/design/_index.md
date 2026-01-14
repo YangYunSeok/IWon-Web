@@ -18,7 +18,6 @@ UI implementation must follow this standard first:
 > Legacy references (use only when explicitly requested):
 > - `docs/기본설계문서/웹UI및설계가이드(관리자용).md`
 > - `docs/기본설계문서/api_및_데이터모델_명세서(관리자용).md`
-> - `docs/기본설계문서/관리자화면 목록 정리.md`
 
 ## Codegen Rules
 

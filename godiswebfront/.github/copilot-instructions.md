@@ -265,6 +265,28 @@ Partial output is ❌ forbidden.
 * ❌ Generate APIs, fields, or UI not defined in SSOT
 * ❌ Modify existing `src/api` files without explicit instruction
 
+## 8.1 UI SSOT Minimal Specification (MANDATORY)
+
+All UI SSOT documents **MUST** follow the 5-section minimal specification defined in:
+
+- `docs/design/ui/_ssot-ui-minimal-template.md`
+
+### Required Sections (STRICT)
+
+1. Purpose  
+2. Layout  
+3. API Flow  
+4. State / Error / Empty  
+5. Authorization  
+
+Rules:
+
+- ❌ Do NOT invent or omit sections
+- ❌ Do NOT change section meanings
+- ✅ Additional sections are allowed **only if they do not replace or weaken the required ones**
+- If a UI document does not comply, **update the SSOT first before implementing code**
+
+
 ---
 
 ## 9. Doc Role Boundaries (MUST FOLLOW)

@@ -26,16 +26,30 @@
    - `[승인 실행]`, `[반려]` (사유 입력)
    - 실행 결과 로그: Tx Hash, 블록 번호
 
-## 3. 데이터 플로우
+## 3. API 플로우
+
+### 3.1 최초 진입
 
 | 단계 | API |
 | --- | --- |
 | 목록 조회 | `GET /admin/approvals` (기본 status=pending) |
+
+### 3.2 사용자 액션
+
+| 단계 | API |
+| --- | --- |
 | 상세 보기 | `GET /admin/approvals/{approvalId}` |
 | 승인 실행 | `POST /admin/approvals/{approvalId}/confirm` |
 | 승인 반려 | `POST /admin/approvals/{approvalId}/reject` |
 
-## 4. 상태/에러 처리
+### 3.3 추가 플로우
+
+- 실행 시 추가 보안(2FA 등) 필요 시 모달 삽입 가능: TBD
+
+## 4. 상태 / 에러 / 빈 화면
+
+- 로딩: TBD
+- 빈 화면: TBD
 
 | 상태 | UX |
 | --- | --- |
