@@ -118,7 +118,10 @@ responseType: EmployeeWalletListResponse
 | --- | --- | --- |
 | walletStatus | WalletStatus (optional) | 지갑 상태 필터 |
 | department | string (optional) | 부서 |
-| employeeName | string (optional) | 이름 검색어 |
+| name | string (optional) | 이름 검색어(부분일치) |
+| keyword | string (optional) | 통합 검색(사번/이메일 등) |
+| page | number (optional) | 페이지(1-base) |
+| size | number (optional) | 페이지 크기 |
 
 - Response: `EmployeeWalletListResponse`
 
@@ -145,9 +148,9 @@ responseType: CreateWalletResponse
 
 - Response: `CreateWalletResponse`
 
-### 3.3. 코인 지급 / 회수 기안
+### 3.3. 코인 지급 / 회수 요청 생성
 
-#### 3.3.1. 지급 기안 (Mint)
+#### 3.3.1. 지급 요청 생성 (Mint)
 
 - **Method/Path**: `POST /admin/mint/request`
 - **Auth**: bearer
@@ -165,7 +168,7 @@ responseType: ApprovalRequest
 - Request Body: `MintRequest` (필드 정의 TBD → UI 기준으로 amount/coinType/대상/사유를 포함해야 함)
 - Response: `ApprovalRequest`
 
-#### 3.3.2. 회수 기안 (Burn)
+#### 3.3.2. 회수 요청 생성 (Burn)
 
 - **Method/Path**: `POST /admin/burn/request`
 - **Auth**: bearer
@@ -185,24 +188,52 @@ responseType: ApprovalRequest
 
 ### 3.4. 승인 관리
 
-#### 3.4.1. 승인 대기 목록
+#### 3.4.1. 승인 목록 조회
 
-- **Method/Path**: `GET /admin/approvals/pending`
+- **Method/Path**: `GET /admin/approvals`
 - **Auth**: bearer
 
 ```@codegen
-id: webApproval.listPending
+id: webApproval.list
 resource: webApproval
 method: GET
-path: /admin/approvals/pending
+path: /admin/approvals
 auth: bearer
-requestType: ListPendingApprovalsRequest
+requestType: ListApprovalsRequest
 responseType: ApprovalListResponse
 ```
 
+Query:
+
+| 파라미터 | 타입 | 설명 |
+| --- | --- | --- |
+| status | ApprovalStatus (optional) | 상태 필터(기본: pending) |
+| department | string (optional) | 부서(조직) |
+| name | string (optional) | 이름 검색(부분일치) |
+| keyword | string (optional) | 통합 검색(요청 ID/가맹점명 등) |
+| page | number (optional) | 페이지(1-base) |
+| size | number (optional) | 페이지 크기 |
+
 - Response: `ApprovalListResponse`
 
-#### 3.4.2. 승인 실행
+#### 3.4.2. 승인 상세 조회
+
+- **Method/Path**: `GET /admin/approvals/{approvalId}`
+- **Auth**: bearer
+
+```@codegen
+id: webApproval.get
+resource: webApproval
+method: GET
+path: /admin/approvals/{approvalId}
+auth: bearer
+requestType: GetApprovalRequest
+responseType: ApprovalDetail
+```
+
+---
+
+#### 3.4.3. 승인 실행
 
 - **Method/Path**: `POST /admin/approvals/{approvalId}/confirm`
 - **Auth**: bearer
@@ -219,6 +250,23 @@ responseType: AdminTransaction
 
 - Path Param: `approvalId`
 - Response: `AdminTransaction`
+
+---
+
+#### 3.4.4. 승인 반려
+
+- **Method/Path**: `POST /admin/approvals/{approvalId}/reject`
+- **Auth**: bearer
+
+```@codegen
+id: webApproval.reject
+resource: webApproval
+method: POST
+path: /admin/approvals/{approvalId}/reject
+auth: bearer
+requestType: RejectApprovalRequest
+responseType: ApprovalDetail
+```
 
 ### 3.5. 월별 지급 대상자 관리
 
@@ -242,50 +290,35 @@ Query:
 | --- | --- | --- |
 | year | number (optional) | 연도 필터 |
 | month | number (optional) | 월 필터 |
-| coinType | string (optional) | 코인 필터 |
-| status | string (optional) | 상태 필터 |
+| coinType | CoinType (optional) | 코인 필터 |
+| status | MonthlyPayeeStatus (optional) | 상태 필터 |
+| department | string (optional) | 부서(조직) |
+| name | string (optional) | 이름 검색(부분일치) |
+| keyword | string (optional) | 통합 검색(사번/이메일 등) |
+| page | number (optional) | 페이지(1-base) |
+| size | number (optional) | 페이지 크기 |
 
 - Response: `MonthlyPayeeList`
 
-#### 3.5.2. 월별 지급 대상자 일괄 등록
+#### 3.5.2. 월별 지급 대상자 등록/수정
 
-- **Method/Path**: `POST /admin/monthly-payees`
+- **Method/Path**: `POST /admin/monthly-payees/{id}`
 - **Auth**: bearer
 
 ```@codegen
-id: webMonthlyPayee.createBulk
+id: webMonthlyPayee.upsert
 resource: webMonthlyPayee
 method: POST
-path: /admin/monthly-payees
-auth: bearer
-requestType: CreateMonthlyPayeesRequest
-responseType: MonthlyPayeeList
-```
-
-Request Body: `CreateMonthlyPayeesRequest` (예: year, month, items[{ employeeId, coinType, amount, reason }])
-
-- Response: 등록된 `MonthlyPayeeList` (중복/유효성 검사 결과 포함 가능)
-
-#### 3.5.3. 월별 지급 대상자 단건 수정
-
-- **Method/Path**: `PUT /admin/monthly-payees/{id}`
-- **Auth**: bearer
-
-```@codegen
-id: webMonthlyPayee.update
-resource: webMonthlyPayee
-method: PUT
 path: /admin/monthly-payees/{id}
 auth: bearer
-requestType: UpdateMonthlyPayeeRequest
+requestType: UpsertMonthlyPayeeRequest
 responseType: MonthlyPayee
 ```
 
 - Path Param: `id`
-- Request Body: `UpdateMonthlyPayeeRequest`
-- Response: 수정된 `MonthlyPayee`
+- Response: `MonthlyPayee`
 
-#### 3.5.4. 월별 지급 대상자 단건 삭제
+#### 3.5.3. 월별 지급 대상자 단건 삭제
 
 - **Method/Path**: `DELETE /admin/monthly-payees/{id}`
 - **Auth**: bearer
@@ -303,20 +336,37 @@ responseType: DeleteMonthlyPayeeResponse
 - Path Param: `id`
 - Response: `DeleteMonthlyPayeeResponse`
 
-#### 3.5.5. 월별 지급 대상자 일괄 삭제
+#### 3.5.4. 월별 지급 대상자 일괄 삭제
 
-- **Method/Path**: `POST /admin/monthly-payees/bulk-delete`
+- **Method/Path**: `PUT /admin/monthly-payees/bulk-delete`
 - **Auth**: bearer
 
 ```@codegen
 id: webMonthlyPayee.bulkDelete
 resource: webMonthlyPayee
-method: POST
+method: PUT
 path: /admin/monthly-payees/bulk-delete
 auth: bearer
 requestType: BulkDeleteMonthlyPayeesRequest
 responseType: BulkDeleteMonthlyPayeesResponse
 ```
+
+#### 3.5.5. 월별 지급 계획 확정
+
+- **Method/Path**: `DELETE /admin/monthly-payees/{year}-{month}/confirm`
+- **Auth**: bearer
+
+```@codegen
+id: webMonthlyPayee.confirm
+resource: webMonthlyPayee
+method: DELETE
+path: /admin/monthly-payees/{year}-{month}/confirm
+auth: bearer
+requestType: ConfirmMonthlyPayeesRequest
+responseType: ConfirmMonthlyPayeesResponse
+```
+
+---
 
 #### 3.5.6. 월별 지급 파일 내보내기
 
@@ -347,9 +397,19 @@ resource: webTxHistory
 method: GET
 path: /admin/transactions
 auth: bearer
-requestType: ListAdminTransactionsRequest
-responseType: AdminTransactionListResponse
+requestType: ListTransactionsRequest
+responseType: TransactionListResponse
 ```
+
+---
+
+### 3.7. 재무회계결산 관리
+
+UI 문서에는 화면/탭 구성이 정의되어 있으나, API 계약은 백엔드 확정이 필요합니다.
+
+- 탭 1: 재무회계결산 내역(분개 리스트)
+- 탭 2: 결산보고서(요약)
+- 탭 3: 준비금 계정 잔액 및 발행부채 현황
 
 ## 4. 문서 유지보수 메모
 

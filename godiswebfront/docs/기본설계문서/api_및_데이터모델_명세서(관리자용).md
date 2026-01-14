@@ -1,6 +1,6 @@
 # API 및 데이터모델 명세서 (관리자용, I-WON Admin)
 
-본 문서는 **웹UI및설계가이드(관리자용)2.md**에 정의된 관리자 UI/UX를 구현하기 위해 필요한
+본 문서는 **웹UI및설계가이드(관리자용).md**에 정의된 관리자 UI/UX를 구현하기 위해 필요한
 백엔드 **API / 요청·응답 DTO / 데이터 모델**을 정리한 명세서입니다.
 
 - 대상 클라이언트: Admin Web (Operator / Approver)
@@ -40,9 +40,14 @@ responseType: <TypeName>
 ### 1.1. 인증 / 권한
 
 - Header: `Authorization: Bearer <adminAccessToken>`
-- Role
-    - `operator`: 기안, 조회, 업로드
-    - `approver`: 승인, 실행, 키 관리
+- Role (UI 표기)
+    - `operator`: 요청 생성/관리(지갑 생성, Mint/Burn 요청 등)
+    - `approver`: 승인/확정/감사(승인 처리, 결산 등)
+    - `viewer`: 조회 전용(대시보드/거래이력 등)
+- 권한 코드 (RBAC)
+    - 작성자: `ROLE_ADMIN_OPERATOR`
+    - 승인자: `ROLE_ADMIN_APPROVER`
+    - 조회 전용: `ROLE_ADMIN_VIEWER`
 
 ### 1.2. 공통 타입
 
@@ -54,8 +59,24 @@ responseType: <TypeName>
 | WalletStatus | 'uncreated' \| 'active' \| 'frozen' | 지갑 상태 |
 | TxType | 'mint' \| 'burn' \| 'transfer' | 관리자 트랜잭션 유형 |
 | ApprovalStatus | 'pending' \| 'approved' \| 'rejected' | 승인 상태 |
+| ApprovalType | 'settlement' \| 'naverpayConversion' \| 'mint' \| 'burn' | 승인 요청 유형 |
+| ApprovalRequesterType | 'merchant' \| 'system' \| 'admin' | 요청 주체 |
+| MonthlyPlanStatus | 'draft' \| 'confirmed' | 월별 지급 계획 상태 |
+| MonthlyPayeeStatus | 'scheduled' \| 'paid' \| 'cancelled' | 월별 지급 대상자 상태 |
 
-### 1.3. 공통 에러 코드
+### 1.3. 공통 조회/검색(Query) 규약 (Dashboard 제외)
+
+다수의 리스트 화면은 아래 공통 검색 파라미터를 지원하는 것을 권장합니다. (화면별로 일부 생략 가능)
+
+| 파라미터 | 타입 | 설명 |
+|---|---|---|
+| department | string (optional) | 부서(조직) 필터 |
+| name | string (optional) | 이름 부분일치 |
+| keyword | string (optional) | 통합 검색(사번/이메일/TxHash 등) |
+| page | number (optional) | 페이지(1-base) |
+| size | number (optional) | 페이지 크기 |
+
+### 1.4. 공통 에러 코드
 
 | 코드 | 설명 |
 |---|---|
@@ -129,11 +150,39 @@ responseType: <TypeName>
 | 필드 | 타입 | 설명 |
 |---|---|---|
 | approvalId | string | 승인 요청 ID |
-| title | string | 기안 제목 |
-| type | TxType | 트랜잭션 유형 |
-| totalAmount | IWC | 총 금액 |
+| type | ApprovalType | 승인 요청 유형 |
+| requesterType | ApprovalRequesterType | 요청 주체 |
+| requesterName | string (optional) | 요청 주체 표시명(가맹점/시스템/관리자) |
+| subjectName | string (optional) | 가맹점명 또는 대상자 표시명 |
+| amount | IWC | 요청 금액 |
 | status | ApprovalStatus | 승인 상태 |
 | requestedAt | ISODateString | 요청 시각 |
+| title | string (optional) | (레거시/옵션) UI 표기용 제목 |
+
+#### ApprovalDetail
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| approval | ApprovalRequest | 헤더 정보 |
+| attachments | { name: string, url: string }[] (optional) | 첨부/증빙 |
+| timeline | { status: ApprovalStatus, at: ISODateString, by?: string, reason?: string }[] (optional) | 승인 이력 |
+| summary | { txCount?: number, totalAmount?: IWC, fee?: IWC, settlementAmount?: IWC } (optional) | (정산요청) 거래 요약 |
+| conversion | { employeeId?: string, name?: string, amount?: IWC, reason?: string } (optional) | (전환요청) 정보 |
+| mintBurn | { beforeTotal?: IWC, afterTotal?: IWC, precheck?: string[] } (optional) | (Mint/Burn) 비교/사전검증 |
+
+#### ApprovalListResponse
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| items | ApprovalRequest[] | 목록 |
+| total | number | 전체 건수 |
+
+#### TransactionListResponse
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| items | AdminTransaction[] | 목록 |
+| total | number | 전체 건수 |
 
 ### 2.4. 월별 지급 대상자 관리
 월별로 다수의 수혜자를 등록/관리하여, 월별 일괄 지급(스케줄링) 또는 검토용으로 사용하는 모델입니다.
@@ -219,7 +268,8 @@ Query:
 |---|---|---|
 | walletStatus | WalletStatus (optional) | 지갑 상태 필터 |
 | department | string (optional) | 부서 |
-| employeeName | string (optional) | 이름 |
+| name | string (optional) | 이름 |
+| keyword | string (optional) | 통합 검색(사번/이메일 등) |
 
 Response:
 
@@ -251,7 +301,7 @@ Request:
 
 ### 3.3. 코인 지급 / 회수
 
-#### 3.3.1. 지급 기안 (Mint)
+#### 3.3.1. 지급 요청 생성 (Mint)
 
 ```@codegen
 id: mint.request
@@ -265,7 +315,7 @@ responseType: ApprovalRequest
 
 ---
 
-#### 3.3.2. 회수 기안 (Burn)
+#### 3.3.2. 회수 요청 생성 (Burn)
 
 ```@codegen
 id: burn.request
@@ -281,21 +331,44 @@ responseType: ApprovalRequest
 
 ### 3.4. 승인 관리
 
-#### 3.4.1. 승인 대기 목록
+#### 3.4.1. 승인 목록 조회
 
 ```@codegen
-id: approval.listPending
+id: approval.list
 resource: approval
 method: GET
-path: /admin/approvals/pending
+path: /admin/approvals
 auth: bearer
-requestType: ListPendingApprovalsRequest
+requestType: ListApprovalsRequest
 responseType: ApprovalListResponse
+```
+
+Query (예):
+
+| 파라미터 | 타입 | 설명 |
+|---|---|---|
+| status | ApprovalStatus (optional) | 상태 필터(기본: pending) |
+| department | string (optional) | 부서(조직) |
+| name | string (optional) | 이름 |
+| keyword | string (optional) | 통합 검색(요청ID/가맹점명 등) |
+
+---
+
+#### 3.4.2. 승인 상세 조회
+
+```@codegen
+id: approval.get
+resource: approval
+method: GET
+path: /admin/approvals/{approvalId}
+auth: bearer
+requestType: GetApprovalRequest
+responseType: ApprovalDetail
 ```
 
 ---
 
-#### 3.4.2. 승인 실행
+#### 3.4.3. 승인 실행
 
 ```@codegen
 id: approval.confirm
@@ -306,6 +379,26 @@ auth: bearer
 requestType: ConfirmApprovalRequest
 responseType: AdminTransaction
 ```
+
+---
+
+#### 3.4.4. 승인 반려
+
+```@codegen
+id: approval.reject
+resource: approval
+method: POST
+path: /admin/approvals/{approvalId}/reject
+auth: bearer
+requestType: RejectApprovalRequest
+responseType: ApprovalDetail
+```
+
+Request:
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| reason | string | 반려 사유(필수) |
 
 ### 3.5. 월별 지급 대상자 관리
 
@@ -329,45 +422,98 @@ Query:
 | month | number (optional) | 월 필터 |
 | coinType | CoinType (optional) | 코인 필터 |
 | status | MonthlyPayeeStatus (optional) | 상태 필터 |
+| department | string (optional) | 부서(조직) |
+| name | string (optional) | 이름 |
+| keyword | string (optional) | 통합 검색(사번/이메일 등) |
 
 Response: `MonthlyPayeeList`
 
 ---
 
-#### 3.5.2. 월별 지급 대상자 일괄 등록
-- **Method/Path**: `POST /admin/monthly-payees`
-- **Auth**: bearer
+#### 3.5.2. 월별 지급 대상자 등록/수정
 
 ```@codegen
-id: monthlyPayee.createBulk
+id: monthlyPayee.upsert
 resource: monthlyPayee
 method: POST
-path: /admin/monthly-payees
+path: /admin/monthly-payees/{id}
 auth: bearer
-requestType: CreateMonthlyPayeesRequest
-responseType: MonthlyPayeeList
+requestType: UpsertMonthlyPayeeRequest
+responseType: MonthlyPayee
 ```
-Request Body (예):
+
+Request:
+
 | 필드 | 타입 | 설명 |
 |---|---|---|
 | year | number | 연도 |
 | month | number | 월 |
-| items | { employeeId: string, coinType: CoinType, amount: IWC, reason?: string }[] | 대상 목록 |
-
-- Response: 등록된 `MonthlyPayeeList` (중복/유효성 검사 결과 포함 가능)
+| employeeId | string | 사번 |
+| coinType | CoinType | 코인 |
+| amount | IWC | 금액 |
+| reason | string (optional) | 메모 |
 
 ---
 
 #### 3.5.3. 월별 지급 대상자 수정 / 삭제
-- 단건 수정: `PUT /admin/monthly-payees/{id}`
 - 단건 삭제: `DELETE /admin/monthly-payees/{id}`
-- 일괄 삭제: `POST /admin/monthly-payees/bulk-delete` (id 리스트)
+- 일괄 삭제: `PUT /admin/monthly-payees/bulk-delete` (id 리스트)
 
 ---
 
-#### 3.5.4. 월별 지급 파일 내보내기
+#### 3.5.4. 월별 지급 계획 확정
+
+```@codegen
+id: monthlyPayee.confirm
+resource: monthlyPayee
+method: DELETE
+path: /admin/monthly-payees/{year}-{month}/confirm
+auth: bearer
+requestType: ConfirmMonthlyPayeesRequest
+responseType: ConfirmMonthlyPayeesResponse
+```
+
+---
+
+#### 3.5.5. 월별 지급 파일 내보내기
 - **Method/Path**: `GET /admin/monthly-payees/export?year=YYYY&month=MM&coinType=...`
 - CSV/XLSX로 내보내기 (UI에서 다운로드)
+
+---
+
+### 3.6. 거래 이력 조회
+
+#### 3.6.1. 거래 이력 목록 조회
+
+```@codegen
+id: transaction.list
+resource: transaction
+method: GET
+path: /admin/transactions
+auth: bearer
+requestType: ListTransactionsRequest
+responseType: TransactionListResponse
+```
+
+Query (예):
+
+| 파라미터 | 타입 | 설명 |
+|---|---|---|
+| from | ISODateString (optional) | 시작 시각 |
+| to | ISODateString (optional) | 종료 시각 |
+| type | TxType (optional) | 유형 |
+| coinType | CoinType (optional) | 코인 |
+| keyword | string (optional) | 통합 검색(TxHash/사번/이름 등) |
+
+---
+
+### 3.7. 재무회계결산 관리
+
+본 화면은 UI 가이드에 포함되어 있으나, API 스펙은 백엔드 확정이 필요합니다.
+
+- 탭 1: 재무회계결산 내역(분개 리스트)
+- 탭 2: 결산보고서(요약)
+- 탭 3: 준비금 계정 잔액 및 발행부채 현황
 
 ---
 
