@@ -11,13 +11,13 @@
 
 | 화면키 | 화면명 | 파일명 | 메뉴키 | 라우트 | 권한키 | UI 문서 | API 리소스 | 소스경로 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| web-dashboard | 대시보드 | STOCOIN01S1.jsx | Dashboard | /admin/dashboard | ROLE_ADMIN_VIEWER | docs/design/ui/admin/web-dashboard.md | webDashboard | TBD |
-| web-wallet-mgmt | 임직원 지갑 관리 | STOCOIN02S1.jsx | WalletMgmt | /admin/wallet-mgmt | ROLE_ADMIN_OPERATOR | docs/design/ui/admin/web-wallet-mgmt.md | webWallet | TBD |
-| web-coin-dist | 코인 지급 관리 | STOCOIN03S1.jsx | CoinDist | /admin/coin-dist | ROLE_ADMIN_OPERATOR | docs/design/ui/admin/web-coin-dist.md | webMint, webBurn | TBD |
-| web-tx-history | 거래 이력 조회 | STOCOIN04S1.jsx | TxHistory | /admin/tx-history | ROLE_ADMIN_VIEWER | docs/design/ui/admin/web-tx-history.md | webTxHistory | TBD |
-| web-approval | 승인 관리 | STOCOIN05S1.jsx | Approval | /admin/approval | ROLE_ADMIN_APPROVER | docs/design/ui/admin/web-approval.md | webApproval | TBD |
-| web-monthly-plan | 월별 지급 대상자 관리 | STOCOIN06S1.jsx | MonthlyPlan | /admin/monthly-plan | ROLE_ADMIN_OPERATOR | docs/design/ui/admin/web-monthly-plan.md | webMonthlyPayee | TBD |
-| web-financial-closing | 재무회계결산 관리 | STOCOIN07S1.jsx | FinancialClosing | /admin/financial-closing | ROLE_ADMIN_APPROVER | docs/design/ui/admin/web-financial-closing.md | TBD | TBD |
+| web-dashboard | 대시보드 | IWONCOIN01S1.jsx | Dashboard | /admin/dashboard | ROLE_ADMIN_VIEWER | docs/design/ui/admin/web-dashboard.md | webDashboard | TBD |
+| web-wallet-mgmt | 임직원 지갑 관리 | IWONCOIN02S1.jsx | WalletMgmt | /admin/wallet-mgmt | ROLE_ADMIN_OPERATOR | docs/design/ui/admin/web-wallet-mgmt.md | webWallet | TBD |
+| web-coin-dist | 코인 지급 관리 | IWONCOIN03S1.jsx | CoinDist | /admin/coin-dist | ROLE_ADMIN_OPERATOR | docs/design/ui/admin/web-coin-dist.md | webMint, webBurn | TBD |
+| web-tx-history | 거래 이력 조회 | IWONCOIN04S1.jsx | TxHistory | /admin/tx-history | ROLE_ADMIN_VIEWER | docs/design/ui/admin/web-tx-history.md | webTxHistory | TBD |
+| web-approval | 승인 관리 | IWONCOIN05S1.jsx | Approval | /admin/approval | ROLE_ADMIN_APPROVER | docs/design/ui/admin/web-approval.md | webApproval | TBD |
+| web-monthly-plan | 월별 지급 대상자 관리 | IWONCOIN06S1.jsx | MonthlyPlan | /admin/monthly-plan | ROLE_ADMIN_OPERATOR | docs/design/ui/admin/web-monthly-plan.md | webMonthlyPayee | TBD |
+| web-financial-closing | 재무회계결산 관리 | IWONCOIN07S1.jsx | FinancialClosing | /admin/financial-closing | ROLE_ADMIN_APPROVER | docs/design/ui/admin/web-financial-closing.md | TBD | TBD |
 
 ## 갱신 체크리스트
 
