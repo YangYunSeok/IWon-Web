@@ -39,7 +39,14 @@ public class IWONCOIN01Service {
     }
 
     public Map<String, Object> getDailyMetrics() {
-        Map<String, Object> row = mapper.selectDailyMetrics(new HashMap<>());
+        return getDailyMetrics(null);
+    }
+
+    public Map<String, Object> getDailyMetrics(String queryDate) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("date", queryDate);
+
+        Map<String, Object> row = mapper.selectDailyMetrics(params);
 
         String date = toStringOrNull(getAny(row, "date"));
         int newWalletCount = toInt(getAny(row, "newWalletCount", "new_wallet_count"));

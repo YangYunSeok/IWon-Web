@@ -3,6 +3,7 @@ package com.godisweb.controller.iwon;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,7 +36,7 @@ public class IWONCOIN01Controller {
     }
 
     @GetMapping("/daily")
-    public Map<String, Object> getDailyMetrics() {
-        return iwoncoin01Service.getDailyMetrics();
+    public Map<String, Object> getDailyMetrics(@RequestParam(name = "date", required = false) String date) {
+        return iwoncoin01Service.getDailyMetrics(date);
     }
 }

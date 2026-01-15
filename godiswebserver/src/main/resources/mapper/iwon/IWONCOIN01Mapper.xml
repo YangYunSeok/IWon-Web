@@ -3,28 +3,65 @@
 <mapper namespace="com.godisweb.mapper.iwon.IWONCOIN01Mapper">
 
     <!--
-      NOTE
-      - 이 쿼리들은 화면 스캐폴딩 단계에서 "테이블 없이도" 동작하게 하기 위한 기본값입니다.
-      - 실제 구현 시 IWon 발행/지갑/승인 테이블을 기준으로 집계 쿼리로 교체하세요.
+      Dashboard (IWONCOIN01S1)
+      - Tables are created from: 테이블 스크립트_v0.2.sql
+      - This mapper now reads real aggregates from:
+        * supply_summary_history, supply_snapshots
+        * stats_daily
+        * wallets
+        * approvals
     -->
 
+    <!-- 총 발행량 요약 (SupplySummary) : 최신 스냅샷 기준 -->
     <select id="selectSupplySummary" parameterType="map" resultType="map">
         SELECT
-              1 AS matched
-            , DATE_FORMAT(NOW(3), '%Y-%m-%dT%H:%i:%s.%f%z') AS checked_at
-            , NULL AS block_height
-            , 0 AS db_total
-            , 0 AS chain_total
-            , 0 AS diff
+              IFNULL(snap.matched, 0) AS matched
+            , DATE_FORMAT(h.snapshot_at, '%Y-%m-%dT%H:%i:%s.%f%z') AS checked_at
+            , CAST(JSON_UNQUOTE(JSON_EXTRACT(h.metadata, '$.blockHeight')) AS UNSIGNED) AS block_height
+            , IFNULL(snap.db_total, 0) AS db_total
+            , IFNULL(snap.chain_total, 0) AS chain_total
+            , (IFNULL(snap.db_total, 0) - IFNULL(snap.chain_total, 0)) AS diff
+        FROM supply_summary_history h
+        LEFT JOIN (
+            SELECT
+                  ss.snapshot_id
+                , SUM(ss.db_total)   AS db_total
+                , SUM(ss.chain_total) AS chain_total
+                , MIN(ss.matched)    AS matched
+            FROM supply_snapshots ss
+            GROUP BY ss.snapshot_id
+        ) snap
+          ON snap.snapshot_id = h.id
+        ORDER BY h.snapshot_at DESC
+        LIMIT 1
     </select>
 
+    <!-- 금일 주요 지표 (DailyMetrics)
+         - date 파라미터(yyyy-mm-dd)가 있으면 해당 일자 기준, 없으면 CURDATE()
+    -->
     <select id="selectDailyMetrics" parameterType="map" resultType="map">
         SELECT
-              DATE_FORMAT(CURDATE(), '%Y-%m-%d') AS date
-            , 0 AS new_wallet_count
-            , 0 AS minted_amount
-            , 0 AS burned_amount
-            , 0 AS pending_approval_count
+              DATE_FORMAT(d.target_date, '%Y-%m-%d') AS date
+            , IFNULL(w.new_wallet_count, 0) AS new_wallet_count
+            , IFNULL(sd.minted_today, 0)    AS minted_amount
+            , IFNULL(sd.burned_today, 0)    AS burned_amount
+            , IFNULL(p.pending_approval_count, 0) AS pending_approval_count
+        FROM (
+            SELECT COALESCE(STR_TO_DATE(#{date}, '%Y-%m-%d'), CURDATE()) AS target_date
+        ) d
+        LEFT JOIN (
+            SELECT
+                DATE(created_at) AS dt,
+                COUNT(*) AS new_wallet_count
+            FROM wallets
+            GROUP BY DATE(created_at)
+        ) w ON w.dt = d.target_date
+        LEFT JOIN stats_daily sd ON sd.date = d.target_date
+        LEFT JOIN (
+            SELECT COUNT(*) AS pending_approval_count
+            FROM approvals
+            WHERE status = 'pending'
+        ) p ON 1=1
     </select>
 
 </mapper>
