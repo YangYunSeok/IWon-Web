@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godisweb.mapper.iwon.IWONCOIN01Mapper">
+
+    <!--
+      NOTE
+      - 이 쿼리들은 화면 스캐폴딩 단계에서 "테이블 없이도" 동작하게 하기 위한 기본값입니다.
+      - 실제 구현 시 IWon 발행/지갑/승인 테이블을 기준으로 집계 쿼리로 교체하세요.
+    -->
+
+    <select id="selectSupplySummary" parameterType="map" resultType="map">
+        SELECT
+              1 AS matched
+            , DATE_FORMAT(NOW(3), '%Y-%m-%dT%H:%i:%s.%f%z') AS checked_at
+            , NULL AS block_height
+            , 0 AS db_total
+            , 0 AS chain_total
+            , 0 AS diff
+    </select>
+
+    <select id="selectDailyMetrics" parameterType="map" resultType="map">
+        SELECT
+              DATE_FORMAT(CURDATE(), '%Y-%m-%d') AS date
+            , 0 AS new_wallet_count
+            , 0 AS minted_amount
+            , 0 AS burned_amount
+            , 0 AS pending_approval_count
+    </select>
+
+</mapper>

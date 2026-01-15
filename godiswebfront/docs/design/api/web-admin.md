@@ -31,6 +31,35 @@ requestType: <TypeName>
 responseType: <TypeName>
 ```
 
+### 0.3. 화면ID(Resource) 기반 구현 규칙 (권장)
+
+> 운영 규칙: Admin Web은 “화면(Program ID) 단위”로 API를 그룹핑할 수 있습니다.
+> 이 경우 `resource`는 화면ID(programId)와 동일하게 두고, 백엔드 파일/클래스명은 **programId에서 화면차수 suffix(S1 등)를 제거한 baseId** 로 맞춥니다.
+
+- `resource`: 화면ID(programId) (예: `IWONCOIN01S1`)
+- (권장) `baseId`: `IWONCOIN01` (예: `IWONCOIN01S1` → `IWONCOIN01`)
+- `id`: `<resource>.<operation>` (예: `IWONCOIN01S1.getSupply`)
+- 컨트롤러 base path(권장): `/api/<system>/<screenIdLower>`
+  - 예: `/api/iwon/iwoncoin01s1`
+- `@codegen.path`는 프론트의 `baseURL: '/api'`를 제외한 경로로 기록
+  - 예: `path: /iwon/iwoncoin01s1/supply`
+
+주의:
+- Java 구현이 `Map<String,Object>`를 반환하더라도, 실제 JSON 응답의 키/타입은 `responseType` 계약을 따라야 합니다.
+  - 즉, Mapper alias 또는 Service 정규화로 camelCase 필드명을 맞춥니다.
+
+복붙 템플릿(신규 엔드포인트 1개당 1블록):
+
+```@codegen
+id: <SCREEN_ID>.<operation>
+resource: <SCREEN_ID>
+method: GET
+path: /<system>/<screenIdLower>/<endpoint>
+auth: bearer
+requestType: <RequestTypeName>
+responseType: <ResponseTypeName>
+```
+
 ## 1. 공통 규약 (관리자)
 
 ### 1.1. 인증 / 권한
@@ -57,16 +86,19 @@ responseType: <TypeName>
 
 ### 3.1. Dashboard
 
+> 구현 컨트롤러(base path): `/api/iwon/iwoncoin01s1/*`
+> 백엔드 클래스(baseId): `com.godisweb.controller.iwon.IWONCOIN01Controller`
+
 #### 3.1.1. 총 발행량 요약 조회
 
-- **Method/Path**: `GET /admin/stats/supply`
+- **Method/Path**: `GET /iwon/iwoncoin01s1/supply`
 - **Auth**: bearer
 
 ```@codegen
-id: webDashboard.getSupply
-resource: webDashboard
+id: IWONCOIN01S1.getSupply
+resource: IWONCOIN01S1
 method: GET
-path: /admin/stats/supply
+path: /iwon/iwoncoin01s1/supply
 auth: bearer
 requestType: GetSupplySummaryRequest
 responseType: SupplySummary
@@ -79,14 +111,14 @@ Note: `SupplySummary`는 코인 구분을 포함하도록 확장될 수 있습�
 
 #### 3.1.2. 금일 주요 지표
 
-- **Method/Path**: `GET /admin/stats/daily`
+- **Method/Path**: `GET /iwon/iwoncoin01s1/daily`
 - **Auth**: bearer
 
 ```@codegen
-id: webDashboard.getDaily
-resource: webDashboard
+id: IWONCOIN01S1.getDaily
+resource: IWONCOIN01S1
 method: GET
-path: /admin/stats/daily
+path: /iwon/iwoncoin01s1/daily
 auth: bearer
 requestType: GetDailyMetricsRequest
 responseType: DailyMetrics

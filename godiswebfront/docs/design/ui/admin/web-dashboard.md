@@ -1,7 +1,7 @@
 # Web Admin Dashboard 화면
 
 > 원본: `docs/기본설계문서/웹UI및설계가이드(관리자용).md` 3장.
-> API 참조: `webDashboard.*` (`docs/design/api/web-admin.md`).
+> API 참조: `IWONCOIN01S1.*` (`docs/design/api/web-admin.md`).
 
 ## 1. 목적
 
@@ -30,13 +30,11 @@
 
 ### 3.1 최초 진입
 
-- 로그인 직후 또는 Sidebar `Dashboard` 클릭 시
-   - `GET /admin/stats/supply`, `GET /admin/stats/daily` 동시 호출
+- 로그인 직후 또는 Sidebar `Dashboard` 클릭 시: `GET /iwon/iwoncoin01s1/supply`, `GET /iwon/iwoncoin01s1/daily` 동시 호출
 
 ### 3.2 사용자 액션
 
-- Focus/새로고침 시
-  - `GET /admin/stats/supply`, `GET /admin/stats/daily` 동시 호출
+- Focus/새로고침 시: `GET /iwon/iwoncoin01s1/supply`, `GET /iwon/iwoncoin01s1/daily` 동시 호출
 - `체크 시각 새로고침` 버튼
   - 두 통계 API 재호출
 - Alert 항목 클릭

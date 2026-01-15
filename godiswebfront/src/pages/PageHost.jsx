@@ -12,7 +12,7 @@ const modules = import.meta.glob(
 function resolveScreenPath(clssNm) {
   if (!clssNm) return null;
 
-  let clean = clssNm.trim().replace(/\.jsx$/i, '');
+  let clean = clssNm.trim().replace(/\.(jsx|js|tsx|ts)$/i, '');
   clean = clean.replace(/\.+/g, '/');
 
   // Vite의 glob 키: "/src/screens/경로/파일.jsx"

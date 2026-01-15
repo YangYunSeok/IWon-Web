@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-01-13T01:34:26.679Z",
+  "generatedAt": "2026-01-15T05:01:52.350Z",
   "entries": [
     {
       "id": "<resource>.<operation>",
@@ -12,20 +12,30 @@
       "sourceFile": "docs/design/api/web-admin.md"
     },
     {
-      "id": "webDashboard.getSupply",
-      "resource": "webDashboard",
+      "id": "<SCREEN_ID>.<operation>",
+      "resource": "<SCREEN_ID>",
       "method": "GET",
-      "path": "/admin/stats/supply",
+      "path": "/<system>/<screenIdLower>/<endpoint>",
+      "auth": "bearer",
+      "requestType": "<RequestTypeName>",
+      "responseType": "<ResponseTypeName>",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "IWONCOIN01S1.getSupply",
+      "resource": "IWONCOIN01S1",
+      "method": "GET",
+      "path": "/iwon/iwoncoin01s1/supply",
       "auth": "bearer",
       "requestType": "GetSupplySummaryRequest",
       "responseType": "SupplySummary",
       "sourceFile": "docs/design/api/web-admin.md"
     },
     {
-      "id": "webDashboard.getDaily",
-      "resource": "webDashboard",
+      "id": "IWONCOIN01S1.getDaily",
+      "resource": "IWONCOIN01S1",
       "method": "GET",
-      "path": "/admin/stats/daily",
+      "path": "/iwon/iwoncoin01s1/daily",
       "auth": "bearer",
       "requestType": "GetDailyMetricsRequest",
       "responseType": "DailyMetrics",
@@ -72,13 +82,23 @@
       "sourceFile": "docs/design/api/web-admin.md"
     },
     {
-      "id": "webApproval.listPending",
+      "id": "webApproval.list",
       "resource": "webApproval",
       "method": "GET",
-      "path": "/admin/approvals/pending",
+      "path": "/admin/approvals",
       "auth": "bearer",
-      "requestType": "ListPendingApprovalsRequest",
+      "requestType": "ListApprovalsRequest",
       "responseType": "ApprovalListResponse",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webApproval.get",
+      "resource": "webApproval",
+      "method": "GET",
+      "path": "/admin/approvals/{approvalId}",
+      "auth": "bearer",
+      "requestType": "GetApprovalRequest",
+      "responseType": "ApprovalDetail",
       "sourceFile": "docs/design/api/web-admin.md"
     },
     {
@@ -92,6 +112,16 @@
       "sourceFile": "docs/design/api/web-admin.md"
     },
     {
+      "id": "webApproval.reject",
+      "resource": "webApproval",
+      "method": "POST",
+      "path": "/admin/approvals/{approvalId}/reject",
+      "auth": "bearer",
+      "requestType": "RejectApprovalRequest",
+      "responseType": "ApprovalDetail",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
       "id": "webMonthlyPayee.list",
       "resource": "webMonthlyPayee",
       "method": "GET",
@@ -102,22 +132,12 @@
       "sourceFile": "docs/design/api/web-admin.md"
     },
     {
-      "id": "webMonthlyPayee.createBulk",
+      "id": "webMonthlyPayee.upsert",
       "resource": "webMonthlyPayee",
       "method": "POST",
-      "path": "/admin/monthly-payees",
-      "auth": "bearer",
-      "requestType": "CreateMonthlyPayeesRequest",
-      "responseType": "MonthlyPayeeList",
-      "sourceFile": "docs/design/api/web-admin.md"
-    },
-    {
-      "id": "webMonthlyPayee.update",
-      "resource": "webMonthlyPayee",
-      "method": "PUT",
       "path": "/admin/monthly-payees/{id}",
       "auth": "bearer",
-      "requestType": "UpdateMonthlyPayeeRequest",
+      "requestType": "UpsertMonthlyPayeeRequest",
       "responseType": "MonthlyPayee",
       "sourceFile": "docs/design/api/web-admin.md"
     },
@@ -134,11 +154,21 @@
     {
       "id": "webMonthlyPayee.bulkDelete",
       "resource": "webMonthlyPayee",
-      "method": "POST",
+      "method": "PUT",
       "path": "/admin/monthly-payees/bulk-delete",
       "auth": "bearer",
       "requestType": "BulkDeleteMonthlyPayeesRequest",
       "responseType": "BulkDeleteMonthlyPayeesResponse",
+      "sourceFile": "docs/design/api/web-admin.md"
+    },
+    {
+      "id": "webMonthlyPayee.confirm",
+      "resource": "webMonthlyPayee",
+      "method": "DELETE",
+      "path": "/admin/monthly-payees/{year}-{month}/confirm",
+      "auth": "bearer",
+      "requestType": "ConfirmMonthlyPayeesRequest",
+      "responseType": "ConfirmMonthlyPayeesResponse",
       "sourceFile": "docs/design/api/web-admin.md"
     },
     {
@@ -157,8 +187,8 @@
       "method": "GET",
       "path": "/admin/transactions",
       "auth": "bearer",
-      "requestType": "ListAdminTransactionsRequest",
-      "responseType": "AdminTransactionListResponse",
+      "requestType": "ListTransactionsRequest",
+      "responseType": "TransactionListResponse",
       "sourceFile": "docs/design/api/web-admin.md"
     }
   ]

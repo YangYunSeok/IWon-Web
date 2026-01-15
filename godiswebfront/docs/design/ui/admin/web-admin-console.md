@@ -44,7 +44,7 @@
 
 ### 3.3 추가 플로우
 
-- 로그인 성공 후 첫 진입(대시보드 초기화): `GET /admin/stats/supply`, `GET /admin/stats/daily`
+- 로그인 성공 후 첫 진입(대시보드 초기화): `GET /iwon/iwoncoin01s1/supply`, `GET /iwon/iwoncoin01s1/daily`
 - 권한 확인: 로그인 응답의 `userRole` 로 분기
 - 세션 만료: 전역 알림 후 Login 리디렉션 (호출 API는 TBD)
 

@@ -279,8 +279,8 @@ Note: 전월 데이터 가져오기나 CSV 업로드 이력은 별도 로그 테
 - `GET /admin/approvals/{approvalId}` → `approvals` + (필요 시) `approval_targets` / 첨부/타임라인
 - `POST /admin/approvals/{approvalId}/confirm` → 트랜잭션: approvals.status 변경 → `admin_transactions` 생성 → `wallet_transactions` 생성 → `audit_logs`
 - `POST /admin/approvals/{approvalId}/reject` → `approvals` status='rejected' + reason 기록
-- `GET /admin/stats/supply` → `supply_summary_history` (+ `supply_snapshots`) (온체인 수치는 외부 노드/인덱서 결과를 함께 사용)
-- `GET /admin/stats/daily` → `stats_daily`
+- `GET /iwon/iwoncoin01s1/supply` → `supply_summary_history` (+ `supply_snapshots`) (온체인 수치는 외부 노드/인덱서 결과를 함께 사용)
+- `GET /iwon/iwoncoin01s1/daily` → `stats_daily`
 - `GET /admin/monthly-payees` → `monthly_payees` (+ `employees` 조인으로 department/name/keyword 확장)
 - `POST /admin/monthly-payees/{id}` → `monthly_payees` 업서트 + `audit_logs`
 - `DELETE /admin/monthly-payees/{id}` → `monthly_payees` 삭제 + `audit_logs`
