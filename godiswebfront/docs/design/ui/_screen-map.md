@@ -17,7 +17,7 @@
 | web-tx-history | 거래 이력 조회 | IWONCOIN04S1.jsx | TxHistory | /admin/tx-history | ROLE_ADMIN_VIEWER | docs/design/ui/admin/web-tx-history.md | webTxHistory | src/screens/IWon/IWONCOIN04S1.jsx |
 | web-approval | 승인 관리 | IWONCOIN05S1.jsx | Approval | /admin/approval | ROLE_ADMIN_APPROVER | docs/design/ui/admin/web-approval.md | webApproval | src/screens/IWon/IWONCOIN05S1.jsx |
 | web-monthly-plan | 월별 지급 대상자 관리 | IWONCOIN06S1.jsx | MonthlyPlan | /admin/monthly-plan | ROLE_ADMIN_OPERATOR | docs/design/ui/admin/web-monthly-plan.md | webMonthlyPayee | TBD |
-| web-financial-closing | 재무회계결산 관리 | IWONCOIN07S1.jsx | FinancialClosing | /admin/financial-closing | ROLE_ADMIN_APPROVER | docs/design/ui/admin/web-financial-closing.md | TBD | TBD |
+| web-financial-closing | 재무회계결산 관리 | IWONCOIN07S1.jsx | FinancialClosing | /admin/financial-closing | ROLE_ADMIN_APPROVER | docs/design/ui/admin/web-financial-closing.md | webFinancialClosing | src/screens/IWon/IWONCOIN07S1.jsx |
 
 ## 화면ID(파일명) 기준 개발 규칙 (권장)
 

@@ -270,6 +270,136 @@
 | approvalId | string | 승인 요청 ID (path param) |
 | reason | string | 반려 사유(필수) |
 
+## 3.8. 재무회계결산 (Financial Closing)
+
+> UI SSOT: `docs/design/ui/admin/web-financial-closing.md`
+> 
+> NOTE: 회계 계정 매핑/준비금·발행부채 스냅샷은 정책/백엔드 확정이 필요하므로,
+> 본 문서는 MVP(조회/다운로드) 기준의 최소 스키마만 정의합니다.
+
+### FinancialClosingPeriodType
+
+| 값 | 설명 |
+| --- | --- |
+| month | 월 기준 |
+| quarter | 분기 기준 |
+| half | 반기 기준 |
+| year | 연간 기준 |
+
+### FinancialClosingJournalPreviewLine
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| side | 'debit' \| 'credit' | 차변/대변 |
+| accountName | string | 계정명(표시용) |
+| amount | IWC | 금액 |
+
+### FinancialClosingJournalItem
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| approvalId | string | 승인 ID(원천) |
+| requestedAt | ISODateString | 승인 요청 시각(원천) |
+| coinType | CoinType | 코인 구분 |
+| eventType | 'mint' \| 'burn' | 이벤트(발행/소각) |
+| amount | IWC | 금액 |
+| status | ApprovalStatus | 승인 상태 |
+| title | string (optional) | 제목/사유(표시용) |
+| previewLines | FinancialClosingJournalPreviewLine[] (optional) | 분개 미리보기(차/대) |
+| previewLineCount | number (optional) | 미리보기 라인 수(서버 제공 시) |
+
+### FinancialClosingJournalListSummary
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| mintCount | number | 발행 건수 |
+| burnCount | number | 소각 건수 |
+| mintAmount | IWC | 발행 금액 합계 |
+| burnAmount | IWC | 소각 금액 합계 |
+| netAmount | IWC | 순발행(= mint - burn) |
+| journalLineCount | number (optional) | 예상/실제 분개 라인 수(서버 정책에 따름) |
+
+### FinancialClosingJournalListResponse
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| summary | FinancialClosingJournalListSummary | 요약 |
+| items | FinancialClosingJournalItem[] | 목록 |
+| total | number | 전체 건수 |
+
+### FinancialClosingJournalListRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| periodType | FinancialClosingPeriodType (optional) | 기간 타입(기본: month) |
+| year | number | 연도 |
+| month | number (optional) | 월(1-12, periodType=month) |
+| quarter | number (optional) | 분기(1-4, periodType=quarter) |
+| half | number (optional) | 반기(1-2, periodType=half) |
+| coinType | CoinType (optional) | 코인 필터 |
+| status | ApprovalStatus (optional) | 승인 상태 필터(선택) |
+
+### FinancialClosingJournalDetailRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| approvalId | string | 승인 ID (path param) |
+
+### FinancialClosingJournalDetailResponse
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| source | ApprovalDetail | 원천(승인 상세) |
+| journalLines | FinancialClosingJournalPreviewLine[] | 분개 라인(차/대 2~n) |
+
+### FinancialClosingReportRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| periodType | FinancialClosingPeriodType (optional) | 기간 타입(기본: month) |
+| year | number | 연도 |
+| month | number (optional) | 월(1-12) |
+| quarter | number (optional) | 분기(1-4) |
+| half | number (optional) | 반기(1-2) |
+| coinType | CoinType (optional) | 코인 필터 |
+
+### FinancialClosingReportResponse
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| mintCount | number | 발행 건수 |
+| burnCount | number | 소각 건수 |
+| mintAmount | IWC | 발행 금액 합계 |
+| burnAmount | IWC | 소각 금액 합계 |
+| netAmount | IWC | 순발행 |
+| reserveBeginning | IWC (optional) | 준비금 기초(TBD) |
+| reserveChange | IWC (optional) | 준비금 증감(TBD) |
+| reserveEnding | IWC (optional) | 준비금 기말(TBD) |
+| liabilityBeginning | IWC (optional) | 발행부채 기초(TBD) |
+| liabilityChange | IWC (optional) | 발행부채 증감(TBD) |
+| liabilityEnding | IWC (optional) | 발행부채 기말(TBD) |
+
+### FinancialClosingExportRequest
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| tab | 'journal' \| 'report' | 내보내기 탭 |
+| periodType | FinancialClosingPeriodType (optional) | 기간 타입(기본: month) |
+| year | number | 연도 |
+| month | number (optional) | 월(1-12) |
+| quarter | number (optional) | 분기(1-4) |
+| half | number (optional) | 반기(1-2) |
+| coinType | CoinType (optional) | 코인 필터 |
+| format | 'csv' \| 'xlsx' (optional) | 포맷(기본: csv) |
+
+### FinancialClosingExportResponse
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| downloadUrl | string | 다운로드 URL(또는 스트림 방식이면 제거/대체) |
+| fileName | string (optional) | 파일명 |
+| expiresAt | ISODateString (optional) | URL 만료 시각 |
+
 ## 4. 지갑 생성 / 일괄 작업
 
 ### CreateWalletRequest

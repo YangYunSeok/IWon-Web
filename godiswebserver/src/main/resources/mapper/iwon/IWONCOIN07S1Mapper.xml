@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godisweb.mapper.iwon.IWONCOIN07S1Mapper">
+
+    <!--
+      SSOT: 재무회계결산 관리 (webFinancialClosing.*)
+      - GET /admin/financial-closing/journals
+      - GET /admin/financial-closing/journals/{approvalId}
+      - GET /admin/financial-closing/report
+      - GET /admin/financial-closing/export
+
+      NOTE:
+      - MVP 구현: approvals 테이블의 mint/burn 승인내역을 기반으로 결산용 데이터(분개/보고서)를 생성합니다.
+      - requested_at 기간 필터는 fromDate/toDate(YYYY-MM-DD) 기반으로 하루 단위 inclusive 처리합니다.
+    -->
+
+    <sql id="FinancialClosingWhere">
+        FROM approvals a
+        WHERE 1=1
+          AND LOWER(a.type) IN ('mint', 'burn')
+
+        <if test="p.fromDate != null and p.fromDate != ''">
+            AND a.requested_at &gt;= CONCAT(#{p.fromDate}, ' 00:00:00')
+        </if>
+        <if test="p.toDate != null and p.toDate != ''">
+            AND a.requested_at &lt; DATE_ADD(CONCAT(#{p.toDate}, ' 00:00:00'), INTERVAL 1 DAY)
+        </if>
+
+        <if test="p.coinType != null and p.coinType != ''">
+            AND LOWER(a.coin_type) = LOWER(#{p.coinType})
+        </if>
+        <if test="p.status != null and p.status != ''">
+            AND LOWER(a.status) = LOWER(#{p.status})
+        </if>
+    </sql>
+
+    <sql id="FinancialClosingSelectCols">
+          a.id AS approvalId
+        , LOWER(a.type) AS type
+        , DATE_FORMAT(a.requested_at, '%Y-%m-%dT%H:%i:%s') AS requestedAt
+        , LOWER(a.coin_type) AS coinType
+        , a.amount AS amount
+        , LOWER(a.status) AS status
+        , a.reason AS title
+    </sql>
+
+    <select id="selectFinancialClosingApprovals" parameterType="map" resultType="map">
+        SELECT
+            <include refid="FinancialClosingSelectCols" />
+        <include refid="FinancialClosingWhere" />
+        ORDER BY a.requested_at DESC
+        <if test="p.size != null and p.offset != null">
+            LIMIT #{p.size} OFFSET #{p.offset}
+        </if>
+    </select>
+
+    <select id="countFinancialClosingApprovals" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        <include refid="FinancialClosingWhere" />
+    </select>
+
+    <select id="selectFinancialClosingAggregate" parameterType="map" resultType="map">
+        SELECT
+              SUM(CASE WHEN LOWER(a.type) = 'mint' THEN 1 ELSE 0 END) AS mintCount
+            , SUM(CASE WHEN LOWER(a.type) = 'burn' THEN 1 ELSE 0 END) AS burnCount
+            , COALESCE(SUM(CASE WHEN LOWER(a.type) = 'mint' THEN a.amount ELSE 0 END), 0) AS mintAmount
+            , COALESCE(SUM(CASE WHEN LOWER(a.type) = 'burn' THEN a.amount ELSE 0 END), 0) AS burnAmount
+        <include refid="FinancialClosingWhere" />
+    </select>
+
+    <select id="selectFinancialClosingApprovalsForExport" parameterType="map" resultType="map">
+        SELECT
+            <include refid="FinancialClosingSelectCols" />
+        <include refid="FinancialClosingWhere" />
+        ORDER BY a.requested_at DESC
+    </select>
+
+</mapper>

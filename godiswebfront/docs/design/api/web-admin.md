@@ -445,6 +445,46 @@ UI 문서에는 화면/탭 구성이 정의되어 있으나, API 계약은 백�
 - 탭 A: 재무회계분개(결산대상: 발행/소각 승인내역)
 - 탭 B: 결산보고서(요약 + 준비금/발행부채 포함)
 
+```@codegen
+id: webFinancialClosing.journals
+resource: webFinancialClosing
+method: GET
+path: /admin/financial-closing/journals
+auth: bearer
+requestType: FinancialClosingJournalListRequest
+responseType: FinancialClosingJournalListResponse
+```
+
+```@codegen
+id: webFinancialClosing.journalDetail
+resource: webFinancialClosing
+method: GET
+path: /admin/financial-closing/journals/{approvalId}
+auth: bearer
+requestType: FinancialClosingJournalDetailRequest
+responseType: FinancialClosingJournalDetailResponse
+```
+
+```@codegen
+id: webFinancialClosing.report
+resource: webFinancialClosing
+method: GET
+path: /admin/financial-closing/report
+auth: bearer
+requestType: FinancialClosingReportRequest
+responseType: FinancialClosingReportResponse
+```
+
+```@codegen
+id: webFinancialClosing.export
+resource: webFinancialClosing
+method: GET
+path: /admin/financial-closing/export
+auth: bearer
+requestType: FinancialClosingExportRequest
+responseType: FinancialClosingExportResponse
+```
+
 ## 4. 문서 유지보수 메모
 
 1. UI/QA에서 화면 플로우를 변경하면 **UI 문서 → 모델 문서 → API 문서** 순으로 갱신한다.
