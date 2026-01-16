@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godisweb.mapper.iwon.IWONCOIN06S1Mapper">
+
+    <!--
+      SSOT: 월별 지급 대상자 관리 (webMonthlyPayee.*)
+      - GET    /admin/monthly-payees
+      - POST   /admin/monthly-payees/{id}
+      - DELETE /admin/monthly-payees/{id}
+      - PUT    /admin/monthly-payees/bulk-delete
+      - DELETE /admin/monthly-payees/{year}-{month}/confirm
+      - GET    /admin/monthly-payees/export
+
+      NOTE:
+      - 기존 DB는 MariaDB/MySQL 계열 함수(DATE_FORMAT 등)를 사용합니다.
+      - 월별 지급 테이블명은 SSOT 문서의 monthly_payees/monthly_plans를 따릅니다.
+    -->
+
+    <sql id="MonthlyPayeeSelectCols">
+        mp.id AS id,
+        mp.year AS year,
+        mp.month AS month,
+        mp.employee_id AS employeeId,
+        COALESCE(mp.name, e.EMP_NM, '') AS name,
+        LOWER(mp.coin_type) AS coinType,
+        mp.amount AS amount,
+        mp.reason AS reason,
+        LOWER(mp.status) AS status,
+        DATE_FORMAT(mp.scheduled_at, '%Y-%m-%dT%H:%i:%s') AS scheduledAt,
+        DATE_FORMAT(mp.paid_at, '%Y-%m-%dT%H:%i:%s') AS paidAt,
+        mp.created_by AS createdBy,
+        DATE_FORMAT(mp.created_at, '%Y-%m-%dT%H:%i:%s') AS createdAt
+    </sql>
+
+    <sql id="MonthlyPayeeFrom">
+        FROM monthly_payees mp
+        LEFT JOIN IWN_EMP_WALLET e
+          ON e.EMP_NO = mp.employee_id
+        WHERE 1=1
+
+        <if test="p.year != null">
+            AND mp.year = #{p.year}
+        </if>
+        <if test="p.month != null">
+            AND mp.month = #{p.month}
+        </if>
+        <if test="p.coinType != null and p.coinType != ''">
+            AND LOWER(mp.coin_type) = LOWER(#{p.coinType})
+        </if>
+        <if test="p.status != null and p.status != ''">
+            AND LOWER(mp.status) = LOWER(#{p.status})
+        </if>
+
+        <if test="p.department != null and p.department != ''">
+            AND e.DEPT_NM = #{p.department}
+        </if>
+        <if test="p.name != null and p.name != ''">
+            AND COALESCE(mp.name, e.EMP_NM, '') LIKE CONCAT('%', #{p.name}, '%')
+        </if>
+        <if test="p.keyword != null and p.keyword != ''">
+            AND (
+                 mp.employee_id LIKE CONCAT('%', #{p.keyword}, '%')
+              OR COALESCE(mp.name, e.EMP_NM, '') LIKE CONCAT('%', #{p.keyword}, '%')
+              OR e.DEPT_NM LIKE CONCAT('%', #{p.keyword}, '%')
+              OR e.WALLET_ADDR LIKE CONCAT('%', #{p.keyword}, '%')
+            )
+        </if>
+    </sql>
+
+    <select id="selectMonthlyPayees" parameterType="map" resultType="map">
+        SELECT
+            <include refid="MonthlyPayeeSelectCols" />
+        <include refid="MonthlyPayeeFrom" />
+        ORDER BY mp.employee_id ASC
+        <if test="p.size != null and p.offset != null">
+            LIMIT #{p.size} OFFSET #{p.offset}
+        </if>
+    </select>
+
+    <select id="countMonthlyPayees" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        <include refid="MonthlyPayeeFrom" />
+    </select>
+
+    <select id="selectMonthlyPayeeById" parameterType="string" resultType="map">
+        SELECT
+            <include refid="MonthlyPayeeSelectCols" />
+        FROM monthly_payees mp
+        LEFT JOIN IWN_EMP_WALLET e
+          ON e.EMP_NO = mp.employee_id
+        WHERE mp.id = #{id}
+    </select>
+
+    <select id="existsMonthlyPayee" parameterType="string" resultType="int">
+        SELECT 1 FROM monthly_payees WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="findMonthlyPayeeIdByKey" resultType="string">
+        SELECT id
+          FROM monthly_payees
+         WHERE year = #{year}
+           AND month = #{month}
+           AND employee_id = #{employeeId}
+           AND LOWER(coin_type) = LOWER(#{coinType})
+         LIMIT 1
+    </select>
+
+    <select id="selectEmployeeName" parameterType="string" resultType="string">
+        SELECT EMP_NM
+          FROM IWN_EMP_WALLET
+         WHERE EMP_NO = #{employeeId}
+         LIMIT 1
+    </select>
+
+    <insert id="insertMonthlyPayee" parameterType="map">
+        INSERT INTO monthly_payees
+        (
+              id
+            , year
+            , month
+            , employee_id
+            , name
+            , coin_type
+            , amount
+            , reason
+            , status
+            , created_by
+            , created_at
+        )
+        VALUES
+        (
+              #{p.id}
+            , #{p.year}
+            , #{p.month}
+            , #{p.employeeId}
+            , #{p.name}
+            , #{p.coinType}
+            , #{p.amount}
+            , #{p.reason}
+            , #{p.status}
+            , #{p.createdBy}
+            , NOW()
+        )
+    </insert>
+
+    <update id="updateMonthlyPayee" parameterType="map">
+        UPDATE monthly_payees
+           SET year = #{p.year}
+             , month = #{p.month}
+             , employee_id = #{p.employeeId}
+             , name = #{p.name}
+             , coin_type = #{p.coinType}
+             , amount = #{p.amount}
+             , reason = #{p.reason}
+         WHERE id = #{p.id}
+    </update>
+
+    <delete id="deleteMonthlyPayee" parameterType="string">
+        DELETE FROM monthly_payees WHERE id = #{id}
+    </delete>
+
+    <delete id="bulkDeleteMonthlyPayees" parameterType="list">
+        DELETE FROM monthly_payees
+         WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectDistinctCoinTypes" resultType="string">
+        SELECT DISTINCT LOWER(coin_type)
+          FROM monthly_payees
+         WHERE year = #{year}
+           AND month = #{month}
+         ORDER BY LOWER(coin_type)
+    </select>
+
+    <select id="selectMonthlyPlanId" resultType="string">
+        SELECT id
+          FROM monthly_plans
+         WHERE year = #{year}
+           AND month = #{month}
+           AND LOWER(coin_type) = LOWER(#{coinType})
+         LIMIT 1
+    </select>
+
+    <insert id="insertMonthlyPlan" parameterType="map">
+        INSERT INTO monthly_plans
+        (
+              id
+            , year
+            , month
+            , coin_type
+            , status
+            , created_at
+            , updated_at
+        )
+        VALUES
+        (
+              #{p.id}
+            , #{p.year}
+            , #{p.month}
+            , #{p.coinType}
+            , #{p.status}
+            , NOW()
+            , NOW()
+        )
+    </insert>
+
+    <update id="updateMonthlyPlanConfirmed" parameterType="map">
+        UPDATE monthly_plans
+           SET status = 'confirmed'
+             , confirmed_at = NOW()
+             , confirmed_by = #{p.confirmedBy}
+             , updated_at = NOW()
+         WHERE id = #{p.id}
+    </update>
+
+    <select id="selectMonthlyPayeesForExport" parameterType="map" resultType="map">
+        SELECT
+            <include refid="MonthlyPayeeSelectCols" />
+        <include refid="MonthlyPayeeFrom" />
+        ORDER BY mp.employee_id ASC
+    </select>
+
+</mapper>
