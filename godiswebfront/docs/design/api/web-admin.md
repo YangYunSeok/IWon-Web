@@ -200,7 +200,7 @@ requestType: MintRequest
 responseType: ApprovalRequest
 ```
 
-- Request Body: `MintRequest` (필드 정의 TBD → UI 기준으로 amount/coinType/대상/사유를 포함해야 함)
+- Request Body: `MintRequest` (필드 정의: `docs/design/model/web-admin.md`의 MintRequest 참고)
 - Response: `ApprovalRequest`
 
 #### 3.3.2. 회수 요청 생성 (Burn)
@@ -218,7 +218,7 @@ requestType: BurnRequest
 responseType: ApprovalRequest
 ```
 
-- Request Body: `BurnRequest`
+- Request Body: `BurnRequest` (필드 정의: `docs/design/model/web-admin.md`의 BurnRequest 참고)
 - Response: `ApprovalRequest`
 
 ### 3.4. 승인 관리

@@ -154,6 +154,29 @@
 
 ## 3. 트랜잭션 / 승인
 
+### MintRequest *(초안)*
+
+> SSOT: `docs/design/api/web-admin.md` - `webMint.request`
+> Note: 기존 문서에 필드가 TBD였기 때문에, UI SSOT(web-coin-dist.md) 기준으로 최소 필드를 확정합니다.
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| employeeIds | string[] | 대상 사번 목록 |
+| coinType | CoinType | 코인 타입(welfare/payment) |
+| amount | IWC | 1인당 지급 금액 |
+| reason | string (optional) | 지급 사유 |
+
+### BurnRequest *(초안)*
+
+> SSOT: `docs/design/api/web-admin.md` - `webBurn.request`
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| employeeIds | string[] | 대상 사번 목록 |
+| coinType | CoinType | 코인 타입(welfare/payment) |
+| amount | IWC | 1인당 회수 금액 |
+| reason | string (optional) | 회수 사유 |
+
 ### AdminTransaction
 
 | 필드 | 타입 | 설명 |

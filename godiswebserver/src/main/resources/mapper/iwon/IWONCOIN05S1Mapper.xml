@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godisweb.mapper.iwon.IWONCOIN05S1Mapper">
+
+    <insert id="insertApproval" parameterType="map">
+        INSERT INTO approvals
+        (
+              id
+            , type
+            , requester_type
+            , requester_id
+            , requester_name
+            , subject_name
+            , request_payload
+            , amount
+            , coin_type
+            , status
+            , approver_id
+            , requested_at
+            , decided_at
+            , executed_at
+            , reason
+        )
+        VALUES
+        (
+              #{id}
+            , #{type}
+            , #{requesterType}
+            , #{requesterId}
+            , #{requesterName}
+            , #{subjectName}
+            , #{requestPayload}
+            , #{amount}
+            , #{coinType}
+            , #{status}
+            , #{approverId}
+            , NOW()
+            , #{decidedAt}
+            , #{executedAt}
+            , #{reason}
+        )
+    </insert>
+
+    <insert id="insertApprovalTargets" parameterType="list">
+        INSERT INTO approval_targets
+        (
+              id
+            , approval_id
+            , employee_id
+            , wallet_id
+            , amount
+            , note
+        )
+        VALUES
+        <foreach collection="list" item="t" separator=",">
+        (
+              #{t.id}
+            , #{t.approvalId}
+            , #{t.employeeId}
+            , #{t.walletId}
+            , #{t.amount}
+            , #{t.note}
+        )
+        </foreach>
+    </insert>
+
+    <select id="selectApprovals" parameterType="map" resultType="map">
+        SELECT
+              id AS approvalId
+            , type
+            , requester_type AS requesterType
+            , requester_name AS requesterName
+            , subject_name AS subjectName
+            , amount
+            , coin_type AS coinType
+            , status
+            , DATE_FORMAT(requested_at, '%Y-%m-%dT%H:%i:%s') AS requestedAt
+            , reason
+        FROM approvals
+        WHERE 1=1
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                   id LIKE CONCAT('%', #{keyword}, '%')
+                OR requester_name LIKE CONCAT('%', #{keyword}, '%')
+                OR subject_name LIKE CONCAT('%', #{keyword}, '%')
+                OR reason LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        ORDER BY requested_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countApprovals" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM approvals
+        WHERE 1=1
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                   id LIKE CONCAT('%', #{keyword}, '%')
+                OR requester_name LIKE CONCAT('%', #{keyword}, '%')
+                OR subject_name LIKE CONCAT('%', #{keyword}, '%')
+                OR reason LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+    </select>
+
+    <select id="selectApprovalById" parameterType="string" resultType="map">
+        SELECT
+              id AS approvalId
+            , type
+            , requester_type AS requesterType
+            , requester_id AS requesterId
+            , requester_name AS requesterName
+            , subject_name AS subjectName
+            , request_payload AS requestPayload
+            , amount
+            , coin_type AS coinType
+            , status
+            , approver_id AS approverId
+            , DATE_FORMAT(requested_at, '%Y-%m-%dT%H:%i:%s') AS requestedAt
+            , DATE_FORMAT(decided_at, '%Y-%m-%dT%H:%i:%s') AS decidedAt
+            , DATE_FORMAT(executed_at, '%Y-%m-%dT%H:%i:%s') AS executedAt
+            , reason
+        FROM approvals
+        WHERE id = #{approvalId}
+    </select>
+
+    <select id="selectApprovalTargetsByApprovalId" parameterType="string" resultType="map">
+        SELECT
+              id
+            , approval_id AS approvalId
+            , employee_id AS employeeId
+            , wallet_id AS walletId
+            , amount
+            , note
+        FROM approval_targets
+        WHERE approval_id = #{approvalId}
+        ORDER BY employee_id ASC
+    </select>
+
+    <update id="updateApprovalStatus" parameterType="map">
+        UPDATE approvals
+           SET status = #{status}
+             , approver_id = #{approverId}
+             , decided_at = NOW()
+             <if test="executedAtNow == true">
+             , executed_at = NOW()
+             </if>
+             <if test="reason != null">
+             , reason = #{reason}
+             </if>
+         WHERE id = #{approvalId}
+           AND status = 'pending'
+    </update>
+
+</mapper>

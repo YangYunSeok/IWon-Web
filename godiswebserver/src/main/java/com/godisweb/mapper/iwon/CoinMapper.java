@@ -8,13 +8,16 @@ import java.util.Map;
 public interface CoinMapper {
     // 직원 목록 조회
     List<Map<String, Object>> selectEmpList(Map<String, Object> param);
-    
+
     // 특정 직원 지갑 조회
     Map<String, Object> selectEmpWallet(String empNo);
-    
+
     // 전송 이력 저장
     int insertTxHist(Map<String, Object> param);
-    
+
     // 직원 잔액 업데이트
     int updateWalletBalance(Map<String, Object> param);
+
+    // 직원 잔액 증감(EMP_NO 기준)
+    int updateEmpBalance(Map<String, Object> param);
 }
