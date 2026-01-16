@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godisweb.mapper.iwon.IWONCOIN04S1Mapper">
+
+    <!--
+      SSOT: webTxHistory.list (GET /admin/transactions)
+
+      ResponseType: TransactionListResponse
+      - items: AdminTransaction[]
+        * txId, txHash?, type, coinType, amount, status, createdAt
+      - total
+
+      NOTE:
+      - 기존 코드베이스는 (1) approvals 기반 Mint/Burn, (2) IWN_TX_HIST 기반 Transfer 이력을 동시에 사용합니다.
+      - UI 문서의 Sender/Receiver/상세 패널은 모델(SSOT)에 필드가 없어, 응답에는 포함하지 않습니다.
+    -->
+
+    <sql id="TxUnion">
+        SELECT
+              a.id AS txId
+            , NULL AS txHash
+            , LOWER(a.type) AS type
+            , LOWER(a.coin_type) AS coinType
+            , a.amount AS amount
+            , CASE
+                WHEN LOWER(a.status) = 'approved' THEN 'success'
+                WHEN LOWER(a.status) = 'pending'  THEN 'pending'
+                ELSE 'failed'
+              END AS status
+            , DATE_FORMAT(COALESCE(a.executed_at, a.decided_at, a.requested_at), '%Y-%m-%dT%H:%i:%s') AS createdAt
+            , COALESCE(a.executed_at, a.decided_at, a.requested_at) AS sortAt
+            , a.requester_name AS keywordA
+            , a.subject_name AS keywordB
+            , a.reason AS keywordC
+        FROM approvals a
+        WHERE 1=1
+          AND LOWER(a.type) IN ('mint', 'burn')
+
+        UNION ALL
+
+        SELECT
+              CONCAT('transfer:', IFNULL(h.TX_HASH, ''), ':', IFNULL(h.RCV_EMP_NO, ''), ':', IFNULL(h.REG_DDTM, '')) AS txId
+            , h.TX_HASH AS txHash
+            , 'transfer' AS type
+            , NULL AS coinType
+            , CAST(h.TX_AMT AS SIGNED) AS amount
+            , CASE
+                WHEN UPPER(h.TX_STAT_CD) = 'SUCCESS' THEN 'success'
+                WHEN UPPER(h.TX_STAT_CD) = 'PENDING' THEN 'pending'
+                ELSE 'failed'
+              END AS status
+            , DATE_FORMAT(STR_TO_DATE(h.REG_DDTM, '%Y%m%d%H%i%s'), '%Y-%m-%dT%H:%i:%s') AS createdAt
+            , STR_TO_DATE(h.REG_DDTM, '%Y%m%d%H%i%s') AS sortAt
+            , h.RCV_EMP_NO AS keywordA
+            , e.EMP_NM AS keywordB
+            , h.TX_HASH AS keywordC
+        FROM IWN_TX_HIST h
+        LEFT JOIN IWN_EMP_WALLET e
+          ON e.EMP_NO = h.RCV_EMP_NO
+        WHERE 1=1
+    </sql>
+
+    <select id="selectTransactions" parameterType="map" resultType="map">
+        SELECT
+              x.txId AS txId
+            , x.txHash AS txHash
+            , x.type AS type
+            , x.coinType AS coinType
+            , x.amount AS amount
+            , x.status AS status
+            , x.createdAt AS createdAt
+        FROM (
+            <include refid="TxUnion" />
+        ) x
+        WHERE 1=1
+
+        <if test="fromDate != null and fromDate != ''">
+            AND x.sortAt &gt;= STR_TO_DATE(CONCAT(#{fromDate}, ' 00:00:00'), '%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND x.sortAt &lt;= STR_TO_DATE(CONCAT(#{toDate}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
+        </if>
+
+        <if test="type != null and type != ''">
+            AND x.type = #{type}
+        </if>
+
+        <if test="coinType != null and coinType != ''">
+            AND x.coinType = #{coinType}
+        </if>
+
+        <if test="keyword != null and keyword != ''">
+            AND (
+                   x.txId LIKE CONCAT('%', #{keyword}, '%')
+                OR x.txHash LIKE CONCAT('%', #{keyword}, '%')
+                OR x.keywordA LIKE CONCAT('%', #{keyword}, '%')
+                OR x.keywordB LIKE CONCAT('%', #{keyword}, '%')
+                OR x.keywordC LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+
+        ORDER BY x.sortAt DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countTransactions" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM (
+            <include refid="TxUnion" />
+        ) x
+        WHERE 1=1
+
+        <if test="fromDate != null and fromDate != ''">
+            AND x.sortAt &gt;= STR_TO_DATE(CONCAT(#{fromDate}, ' 00:00:00'), '%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND x.sortAt &lt;= STR_TO_DATE(CONCAT(#{toDate}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
+        </if>
+
+        <if test="type != null and type != ''">
+            AND x.type = #{type}
+        </if>
+
+        <if test="coinType != null and coinType != ''">
+            AND x.coinType = #{coinType}
+        </if>
+
+        <if test="keyword != null and keyword != ''">
+            AND (
+                   x.txId LIKE CONCAT('%', #{keyword}, '%')
+                OR x.txHash LIKE CONCAT('%', #{keyword}, '%')
+                OR x.keywordA LIKE CONCAT('%', #{keyword}, '%')
+                OR x.keywordB LIKE CONCAT('%', #{keyword}, '%')
+                OR x.keywordC LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+    </select>
+
+</mapper>
