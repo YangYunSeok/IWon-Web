@@ -12,7 +12,7 @@
 | 화면키 | 화면명 | 파일명 | 메뉴키 | 라우트 | 권한키 | UI 문서 | API 리소스 | 소스경로 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | web-dashboard | 대시보드 | IWONCOIN01S1.jsx | Dashboard | /admin/dashboard | ROLE_ADMIN_VIEWER | docs/design/ui/admin/web-dashboard.md | IWONCOIN01S1 | src/screens/IWon/IWONCOIN01S1.jsx |
-| web-wallet-mgmt | 임직원 지갑 관리 | IWONCOIN02S1.jsx | WalletMgmt | /admin/wallet-mgmt | ROLE_ADMIN_OPERATOR | docs/design/ui/admin/web-wallet-mgmt.md | webWallet | TBD |
+| web-wallet-mgmt | 임직원 지갑 관리 | IWONCOIN02S1.jsx | WalletMgmt | /admin/wallet-mgmt | ROLE_ADMIN_OPERATOR | docs/design/ui/admin/web-wallet-mgmt.md | webWallet | src/screens/IWon/IWONCOIN02S1.jsx |
 | web-coin-dist | 코인 지급 관리 | IWONCOIN03S1.jsx | CoinDist | /admin/coin-dist | ROLE_ADMIN_OPERATOR | docs/design/ui/admin/web-coin-dist.md | webMint, webBurn | TBD |
 | web-tx-history | 거래 이력 조회 | IWONCOIN04S1.jsx | TxHistory | /admin/tx-history | ROLE_ADMIN_VIEWER | docs/design/ui/admin/web-tx-history.md | webTxHistory | TBD |
 | web-approval | 승인 관리 | IWONCOIN05S1.jsx | Approval | /admin/approval | ROLE_ADMIN_APPROVER | docs/design/ui/admin/web-approval.md | webApproval | TBD |
@@ -38,11 +38,21 @@
   - Mapper: `godiswebserver/src/main/java/com/godisweb/mapper/<시스템>/IWONCOIN01Mapper.java`
   - Mapper XML: `godiswebserver/src/main/resources/mapper/<시스템>/IWONCOIN01Mapper.xml`
 
+추가 규칙(SSOT):
+
+- **Web Admin 화면이라도, IWon 도메인(IWONCOINxx 계열) 화면의 백엔드 소스는 `<시스템>=iwon` 패키지로 정렬**합니다.
+  - 예: `com.godisweb.controller.iwon.IWONCOIN02S1Controller`
+  - `com.godisweb.controller.admin/*`는 메뉴/권한/운영 관리 등 “관리자 공통” 성격의 API에 사용합니다.
+
 ### 2) API 라우팅 규칙
 
 - Controller base path는 아래 형태를 권장합니다.
   - `/api/<시스템>/<screenIdLower>`
   - 예) `/api/iwon/iwoncoin01s1`
+
+예외(SSOT):
+
+- Admin Web의 일부 리소스는 `/api/admin/*` 형태로 제공될 수 있습니다. (예: 임직원 지갑 관리 `GET /api/admin/employees`)
 - `docs/design/api/web-admin.md`의 `@codegen`에는 `/api`를 제외한 경로를 기록합니다.
   - 예) `path: /iwon/iwoncoin01s1/supply`
 

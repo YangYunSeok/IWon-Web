@@ -96,3 +96,12 @@ mybatis:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
     auto-mapping-behavior: FULL          # (권장) 별도 resultMap 없이 최대한 자동 매핑
+
+# IWONCOIN02S1: 임직원 지갑 생성은 서버가 스마트컨트랙트(또는 지갑 발급 전용) API를 호출해 처리
+iwon:
+  wallet:
+    provisioning:
+      # 예) http://smart-contract-api.internal:8081
+      base-url: ""
+      # 기본값: /wallets/create
+      create-path: "/wallets/create"

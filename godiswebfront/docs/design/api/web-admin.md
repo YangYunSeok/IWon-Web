@@ -129,6 +129,9 @@ responseType: DailyMetrics
 
 ### 3.2. 임직원 지갑 관리
 
+> 구현 컨트롤러(base path): `/api/admin/*`
+> 백엔드 클래스: `com.godisweb.controller.iwon.IWONCOIN02S1Controller`
+
 #### 3.2.1. 임직원 지갑 목록 조회
 
 - **Method/Path**: `GET /admin/employees`

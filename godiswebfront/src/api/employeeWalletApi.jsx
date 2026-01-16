@@ -1,22 +1,25 @@
-import axios from 'axios';
+import { http } from '@/libs/TaskHttp';
 
-const BASE_URL = '/api/employee-wallet';
+// SSOT: docs/design/api/web-admin.md (webWallet.*)
+// - GET  /admin/employees
+// - POST /admin/wallets/create
 
+export const webWallet_listEmployees = async (params = {}) => {
+  return await http.get('/admin/employees', { params, showSpinner: true });
+};
+
+export const webWallet_createWallets = async (employeeIds = []) => {
+  return await http.post(
+    '/admin/wallets/create',
+    { employeeIds },
+    { showSpinner: true },
+  );
+};
+
+// Backward-compatible default export (if any legacy code expects an object)
 const EmployeeWalletApi = {
-  fetchWallets: async (params) => {
-    const response = await axios.get(`${BASE_URL}/list`, { params });
-    return response.data;
-  },
-
-  fetchWalletDetails: async (id) => {
-    const response = await axios.get(`${BASE_URL}/detail/${id}`);
-    return response.data;
-  },
-
-  updateWallet: async (id, data) => {
-    const response = await axios.put(`${BASE_URL}/update/${id}`, data);
-    return response.data;
-  },
+  listEmployees: webWallet_listEmployees,
+  createWallets: webWallet_createWallets,
 };
 
 export default EmployeeWalletApi;

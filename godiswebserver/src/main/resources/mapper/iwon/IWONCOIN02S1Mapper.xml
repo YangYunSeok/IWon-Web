@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godisweb.mapper.iwon.IWONCOIN02S1Mapper">
+
+    <!--
+      SSOT: IWONCOIN02S1 (임직원 지갑 관리)
+      반환 필드: employeeId, name, department, position, walletAddress, walletStatus
+    -->
+    <select id="selectEmployees" parameterType="map" resultType="map">
+        SELECT EMP_NO  AS employeeId
+             , EMP_NM  AS name
+             , DEPT_NM AS department
+             , ''      AS position
+             , WALLET_ADDR AS walletAddress
+             , CASE
+                  WHEN WALLET_ADDR IS NULL OR WALLET_ADDR = '' THEN 'uncreated'
+                  WHEN USE_YN = 'Y' THEN 'active'
+                  ELSE 'frozen'
+               END AS walletStatus
+          FROM IWN_EMP_WALLET
+         WHERE 1=1
+
+         <if test="p != null">
+             <if test="p.keyword != null and p.keyword != ''">
+               AND (
+                     EMP_NO LIKE CONCAT('%', #{p.keyword}, '%')
+                  OR EMP_NM LIKE CONCAT('%', #{p.keyword}, '%')
+                  OR WALLET_ADDR LIKE CONCAT('%', #{p.keyword}, '%')
+               )
+             </if>
+
+             <if test="p.name != null and p.name != ''">
+               AND EMP_NM LIKE CONCAT('%', #{p.name}, '%')
+             </if>
+
+             <if test="p.department != null and p.department != ''">
+               AND DEPT_NM = #{p.department}
+             </if>
+
+             <!-- 재직상태는 SSOT 확정 전이라 실제 컬럼 매핑은 TBD (파라미터만 수용) -->
+             <if test="p.employmentStatus != null and p.employmentStatus != ''">
+               AND 1=1
+             </if>
+
+             <if test="p.onlyUncreated != null and p.onlyUncreated == true">
+               AND (WALLET_ADDR IS NULL OR WALLET_ADDR = '')
+             </if>
+
+             <if test="p.walletStatus != null and p.walletStatus != ''">
+               <choose>
+                 <when test="p.walletStatus == 'uncreated'">
+                   AND (WALLET_ADDR IS NULL OR WALLET_ADDR = '')
+                 </when>
+                 <when test="p.walletStatus == 'active'">
+                   AND (WALLET_ADDR IS NOT NULL AND WALLET_ADDR != '')
+                   AND USE_YN = 'Y'
+                 </when>
+                 <when test="p.walletStatus == 'frozen'">
+                   AND (WALLET_ADDR IS NOT NULL AND WALLET_ADDR != '')
+                   AND USE_YN != 'Y'
+                 </when>
+               </choose>
+             </if>
+
+             <if test="p.limit != null and p.offset != null">
+                 ORDER BY EMP_NO
+                 LIMIT #{p.limit} OFFSET #{p.offset}
+             </if>
+
+             <if test="p.limit == null or p.offset == null">
+                 ORDER BY EMP_NO
+             </if>
+         </if>
+
+         <if test="p == null">
+             ORDER BY EMP_NO
+         </if>
+    </select>
+
+    <select id="selectWalletAddress" parameterType="string" resultType="string">
+        SELECT WALLET_ADDR
+          FROM IWN_EMP_WALLET
+         WHERE EMP_NO = #{employeeId}
+    </select>
+
+    <!-- 지갑 생성(초안): 지갑이 없는 직원에 한해 주소 저장 -->
+    <update id="createWalletIfMissing">
+        UPDATE IWN_EMP_WALLET
+           SET WALLET_ADDR = #{walletAddress}
+             , USE_YN = 'Y'
+             , LST_ADJ_DDTM = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+             , LST_ADJPRN_ID = 'admin'
+         WHERE EMP_NO = #{employeeId}
+           AND (WALLET_ADDR IS NULL OR WALLET_ADDR = '')
+    </update>
+
+</mapper>

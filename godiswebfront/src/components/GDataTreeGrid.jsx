@@ -348,7 +348,6 @@ export default function GDataTreeGrid({
           paddingRight: theme.spacing(1),
           minWidth: `${gridTemplateWidth}px`,
           borderBottom: `1px solid ${theme.palette.divider}`,
-          position: 'relative', // 🔥 absolute 자식을 위한 relative
         }}
       >
         <Box
