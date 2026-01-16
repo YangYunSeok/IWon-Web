@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -259,9 +259,14 @@ export default function IWONCOIN05S1() {
     }
   }, [detail, loadList, openApprovalDetail, rejectReason, webApproval_reject]);
 
+  // 최초 진입 시 1회만 자동 조회 (이후에는 조회 버튼/Enter로 재조회)
+  const loadListRef = useRef(loadList);
   useEffect(() => {
-    loadList();
+    loadListRef.current = loadList;
   }, [loadList]);
+  useEffect(() => {
+    loadListRef.current();
+  }, []);
 
   const kpiPending = status === STATUS.pending ? total : 0;
 
@@ -374,6 +379,9 @@ export default function IWONCOIN05S1() {
               label="키워드"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') loadList();
+              }}
               placeholder="approvalId/대상자/요청자/사유"
               sx={{ width: { xs: '100%', md: 360 } }}
             />
